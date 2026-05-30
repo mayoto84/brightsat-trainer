@@ -1071,6 +1071,9 @@ h3.sec {
   .scorebox .big    { font-size: 26px; }
   .celebration-box h2 { font-size: 20px; }
 
+  /* Hide correct column in topic table — accuracy col fits instead */
+  .bd-hide-mobile { display: none; }
+
   /* Smaller question content to reduce scroll */
   .stem     { font-size: 14px; margin-bottom: 10px; }
   .choice   { font-size: 13px; padding: 9px 10px; }

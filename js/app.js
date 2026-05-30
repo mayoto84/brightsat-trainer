@@ -932,7 +932,7 @@ function renderProgress() {
       '<br><span style="font-size:11px;color:var(--muted)">' +
       (d.section === 'rw' ? 'Reading & Writing' : 'Math') + '</span></td>' +
       '<td class="num">' + aLen + '</td>' +
-      '<td class="num">' + c + '</td>' +
+      '<td class="num bd-hide-mobile">' + c + '</td>' +
       '<td class="num">' + (acc !== null
         ? '<span class="acc-pill" style="color:' + color + ';background:' + bg + '">' + acc + '%</span>'
         : '—') + '</td>';
