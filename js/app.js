@@ -651,6 +651,7 @@ function createUserFromIntro() {
     return;
   }
   startAppForActiveUser();
+  timerToggle(); // auto-start the selected test
 }
 
 function startFromIntro() {
