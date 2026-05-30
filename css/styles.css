@@ -1128,6 +1128,20 @@ h3.sec {
   .xp-bar           { gap: 8px; }
   .scorebox .big    { font-size: 26px; }
   .celebration-box h2 { font-size: 20px; }
+  .scoregrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .scorebox.total {
+    grid-column: 1 / -1;
+  }
+  .scorebox {
+    min-width: 0;
+    padding: 14px 8px;
+  }
+  .scorebox.total .big { font-size: 34px; }
+  .scorebox .big { font-size: 24px; }
 
   /* Hide correct column in topic table — accuracy col fits instead */
   .bd-hide-mobile { display: none; }
