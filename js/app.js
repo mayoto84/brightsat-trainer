@@ -982,6 +982,7 @@ $('resetbtn').onclick = function() {
   if (confirm('Reset all answers, scores, and flags? This cannot be undone.')) {
     state = {};
     Store.setState(state);
+    Store.setLifetimeStats({ totalAnswered: 0, totalCorrect: 0, bySection: {}, byDomain: {} });
     pos = 0;
     reviewMode = false;
     buildList();
