@@ -223,7 +223,10 @@ body {
 ═══════════════════════════════════════════ */
 html, body {
   height: 100%;
-  overflow: hidden;
+  overflow: hidden;        /* default: locked for app shell */
+}
+body.intro-open {
+  overflow-y: auto;        /* unlocked when intro screen is showing */
 }
 
 .wrap {
@@ -1013,17 +1016,50 @@ h3.sec {
     margin-right: -12px;
   }
 
-  /* Intro / welcome screen adjustments */
+  /* Hide tabs during active test — saves ~40px on small screens */
+  .tabs.test-active { display: none; }
+
+  /* ── Intro / welcome screen ── */
   .intro-screen   { align-items: flex-start; }
-  .intro-brand h1 { font-size: 26px; }
-  .mode-grid      { grid-template-columns: 1fr; }
-  .welcome-stats  { grid-template-columns: 1fr 1fr; }
-  .user-row       { align-items: stretch; flex-direction: column; }
-  .user-actions   { display: grid; grid-template-columns: 1fr 1fr; width: 100%; }
+  .intro-brand    { margin-bottom: 10px; }
+  .intro-brand h1 { font-size: 22px; }
+  .intro-brand .sub { font-size: 12px; }
+
+  /* Compact welcome stats: 4-column so 7 stats = 2 rows */
+  .welcome-stats {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 5px;
+  }
+  .welcome-stat   { padding: 5px 3px; }
+  .welcome-stat b { font-size: 14px; }
+  .welcome-stat span { font-size: 8px; }
+
+  /* Mode buttons back to 3-column (horizontal) and shorter */
+  .mode-grid { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .mode-option { min-height: 38px; padding: 5px 4px; font-size: 12px; }
+
+  /* Tighter intro cards */
+  .intro-card { padding: 12px; margin-bottom: 8px; }
+  .intro-input, .intro-select { padding: 10px; font-size: 15px; margin-bottom: 10px; }
+  .intro-mode-label, .intro-card label { margin-bottom: 5px; }
+
+  .user-row     { align-items: stretch; flex-direction: column; }
+  .user-actions { display: grid; grid-template-columns: 1fr 1fr; width: 100%; }
 
   /* XP / scores */
   h1, .brand-button { font-size: 19px; }
   .xp-bar           { gap: 8px; }
   .scorebox .big    { font-size: 26px; }
   .celebration-box h2 { font-size: 20px; }
+
+  /* Smaller question content to reduce scroll */
+  .stem     { font-size: 14px; margin-bottom: 10px; }
+  .choice   { font-size: 13px; padding: 9px 10px; }
+  .passage  { font-size: 13px; padding: 9px 10px; }
+  .qmeta    { margin-bottom: 6px; }
+  .chip     { font-size: 10px; padding: 3px 6px; }
+  .row      { margin-top: 10px; gap: 6px; }
+  .row .btn { padding: 8px 10px; font-size: 12px; }
+  .explain  { font-size: 13px; }
+  .feedback { font-size: 13px; }
 }

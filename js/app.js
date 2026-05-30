@@ -471,6 +471,7 @@ function confirmDeleteUser() {
 }
 
 function showIntro() {
+  document.body.classList.add('intro-open');    // allow intro to scroll
   $('intro-screen').classList.remove('hidden');
   $('app-shell').classList.add('hidden');
   $('intro-error').classList.add('hidden');
@@ -506,12 +507,14 @@ function collapseFilters() {
   $('filter-card').classList.add('filters-hidden');
   $('timer-change-btn').classList.remove('hidden');
   $('timer-mobile-bar').classList.remove('hidden');
+  document.querySelector('.tabs').classList.add('test-active');
 }
 
 function expandFilters() {
   $('filter-card').classList.remove('filters-hidden');
   $('timer-change-btn').classList.add('hidden');
   $('timer-mobile-bar').classList.add('hidden');
+  document.querySelector('.tabs').classList.remove('test-active');
 }
 
 function showQuestionCard() {
@@ -552,6 +555,7 @@ function startAppForActiveUser() {
   reviewMode = false;
   pos = 0;
   $('f-section').value = user.mode || 'all';
+  document.body.classList.remove('intro-open'); // lock scroll for test
   $('intro-screen').classList.add('hidden');
   $('app-shell').classList.remove('hidden');
   updateUserUI();
