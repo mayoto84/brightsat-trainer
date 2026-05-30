@@ -6,3 +6,4 @@ Thumbs.db
 .env.local
 dist/
 .cache/
+data/user-store.json

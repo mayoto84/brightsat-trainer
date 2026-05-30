@@ -6,12 +6,22 @@ Open-practice Digital SAT trainer. No login, no account, no ads. Opens straight 
 
 You need a static file server (required because browsers block `file://` imports for security).
 
+**Recommended - persistent user registry:**
+```bash
+node server.js
+```
+Then open: http://127.0.0.1:5500
+
+This writes handles, progress, XP, and streaks to `data/user-store.json`, so profiles survive browser restarts and incognito windows.
+
 **Option A — Python (built-in, no install):**
 ```bash
 cd brightsat-trainer
 python3 -m http.server 8080
 ```
 Then open: http://localhost:8080
+
+Python, Live Server, and npx static servers use browser storage only. Normal windows keep that storage, but incognito windows and different origins such as `localhost` vs `127.0.0.1` do not share it.
 
 **Option B — Node / npx serve (no global install):**
 ```bash
@@ -110,3 +120,16 @@ Drop the entire `brightsat-trainer/` folder onto any static host:
 - **GitHub Pages** — push to a repo, enable Pages from the root of the branch
 - **Netlify / Vercel** — drag the folder into the dashboard
 - **Any web server** — serve the directory as-is; no build step needed
+
+### GitHub Pages storage behavior
+
+GitHub Pages is static hosting. It cannot run `server.js` and cannot write to `data/user-store.json`.
+
+On GitHub Pages, BrightSAT automatically falls back to browser storage (`localStorage`). User handles, answers, flags, XP, and streaks are saved for the same browser profile on the same deployed URL.
+
+This means:
+- Normal browser sessions keep progress after refreshes and browser restarts.
+- Incognito/private windows do not keep data after the private session ends.
+- Different devices, browsers, or domains do not share the same user registry.
+
+To share user data across devices or private sessions on a deployed site, add a real hosted backend such as Firebase, Supabase, or another database API. GitHub Pages alone cannot provide cross-session server-side user storage.

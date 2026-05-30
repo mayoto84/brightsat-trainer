@@ -14,6 +14,8 @@ var QUESTIONS = [].concat(
 ═══════════════════════════════════════════ */
 var state = Store.getState();
 function saveQ(id, patch) { Store.saveQ(state, id, patch); }
+var introMode = 'math';
+var pendingDeleteUser = null;
 
 /* ═══════════════════════════════════════════
    SCORING CURVE  200–800 per section
@@ -110,7 +112,8 @@ function gridCorrect(input, accepts) {
    TIMER
 ═══════════════════════════════════════════ */
 
-// Official Digital SAT timing per module (one of two modules per section)
+// Official Digital SAT timing per module (one of two modules per section).
+// The countdown scales this pacing to the active practice set size.
 var SAT_RATES = {
   rw:   { qPerMin: 27 / 32, totalQ: 27, label: 'R&W Module (27 Q / 32 min)' },
   math: { qPerMin: 22 / 35, totalQ: 22, label: 'Math Module (22 Q / 35 min)' },
@@ -129,6 +132,17 @@ function _timerElapsed() {
   return timer.pausedMs + (timer.startMs ? Date.now() - timer.startMs : 0);
 }
 
+function _timerRate() {
+  var sec = $('f-section').value;
+  return SAT_RATES[sec] || SAT_RATES.all;
+}
+
+function _timerLimitMs() {
+  var rate = _timerRate();
+  var questionCount = Math.max(1, list.length || TEST_SIZE);
+  return Math.round((questionCount / rate.qPerMin) * 60000);
+}
+
 function _fmtTime(ms) {
   var s = Math.floor(ms / 1000), m = Math.floor(s / 60);
   s = s % 60;
@@ -141,12 +155,12 @@ function timerToggle() {
     timer.startMs = null;
     timer.running = false;
     clearInterval(timer._tick);
-    $('timer-toggle').textContent = '▶ Resume';
+    $('timer-toggle').textContent = 'Resume';
   } else {
     timer.startMs = Date.now();
     timer.running = true;
     timer._tick = setInterval(updateTimerUI, 500);
-    $('timer-toggle').textContent = '⏸ Pause';
+    $('timer-toggle').textContent = 'Pause';
     updateTimerUI();
   }
 }
@@ -157,8 +171,22 @@ function timerReset() {
   timer.startMs = null;
   timer.pausedMs = 0;
   timer.sessionAnswered = 0;
-  $('timer-toggle').textContent = '▶ Start';
+  $('timer-toggle').textContent = 'Start';
   updateTimerUI();
+}
+
+function timerStop() {
+  if (!timer.running) return;
+  timer.pausedMs = _timerElapsed();
+  timer.startMs = null;
+  timer.running = false;
+  clearInterval(timer._tick);
+  $('timer-toggle').textContent = 'Resume';
+  updateTimerUI();
+}
+
+function timerElapsedMs() {
+  return Math.min(_timerElapsed(), _timerLimitMs());
 }
 
 // Called whenever a question is submitted (correct or wrong)
@@ -170,14 +198,26 @@ function timerOnAnswer() {
 }
 
 function updateTimerUI() {
-  var elapsed    = _timerElapsed();
-  var elapsedMin = elapsed / 60000;
+  var elapsed = _timerElapsed();
+  var limitMs = _timerLimitMs();
+  var remaining = Math.max(0, limitMs - elapsed);
+  var elapsedMin = Math.min(elapsed, limitMs) / 60000;
 
-  $('timer-clock').textContent = _fmtTime(elapsed);
+  $('timer-clock').textContent = _fmtTime(remaining);
+  $('timer-clock').classList.toggle('timer-warning', remaining > 0 && remaining <= 300000);
+  $('timer-clock').classList.toggle('timer-expired', remaining === 0);
 
-  var sec  = $('f-section').value;
-  var rate = SAT_RATES[sec] || SAT_RATES.all;
-  $('timer-section-badge').textContent = rate.label;
+  if (timer.running && remaining === 0) {
+    clearInterval(timer._tick);
+    timer.pausedMs = limitMs;
+    timer.startMs = null;
+    timer.running = false;
+    $('timer-toggle').textContent = 'Resume';
+  }
+
+  var rate = _timerRate();
+  var questionCount = Math.max(1, list.length || TEST_SIZE);
+  $('timer-section-badge').textContent = rate.label + ' - ' + questionCount + ' Q in ' + _fmtTime(limitMs);
 
   $('tstat-required').textContent = rate.qPerMin.toFixed(2);
   $('tstat-answered').textContent = timer.sessionAnswered;
@@ -189,21 +229,21 @@ function updateTimerUI() {
     $('pace-fill').style.width    = '0%';
     $('pace-needle').style.left   = '0%';
     var st0 = $('pace-status-text');
-    st0.textContent = '';
+    st0.textContent = remaining === 0 ? 'Time expired' : '';
     st0.className   = 'pace-status-text';
     $('tstat-pace-wrap').className = 'tstat';
     return;
   }
 
   var actualRate   = timer.sessionAnswered / elapsedMin;
-  var targetByNow  = elapsedMin * rate.qPerMin;
+  var targetByNow  = Math.min(questionCount, elapsedMin * rate.qPerMin);
   var diff         = timer.sessionAnswered - targetByNow; // + ahead, − behind
 
   $('tstat-pace').textContent   = actualRate.toFixed(2);
   $('tstat-target').textContent = Math.ceil(targetByNow);
 
-  // Pace bar: position relative to totalQ for this section type
-  var totalQ    = rate.totalQ;
+  // Pace bar: position relative to the active practice set size.
+  var totalQ    = questionCount;
   var fillPct   = Math.min(100, (timer.sessionAnswered / totalQ) * 100);
   var needlePct = Math.min(100, (targetByNow / totalQ) * 100);
   $('pace-fill').style.width  = fillPct   + '%';
@@ -212,7 +252,11 @@ function updateTimerUI() {
   // Status + colour the "Your Q/min" box
   var st   = $('pace-status-text');
   var wrap = $('tstat-pace-wrap');
-  if (diff >= 0.5) {
+  if (remaining === 0 && timer.sessionAnswered < questionCount) {
+    st.textContent = 'Time expired';
+    st.className   = 'pace-status-text behind';
+    wrap.className = 'tstat tstat-warn';
+  } else if (diff >= 0.5) {
     var ahead = Math.floor(diff + 0.5);
     st.textContent = '▲ ' + ahead + (ahead === 1 ? ' Q ahead' : ' Q ahead');
     st.className   = 'pace-status-text ahead';
@@ -272,6 +316,7 @@ function showStreakCelebration(n) {
 
 function updateXPBar(xpData) {
   if (!xpData) xpData = Store.getXP();
+  updateUserUI();
   $('header-xp').textContent = xpData.xp + ' XP';
   $('header-streak').textContent = xpData.streak + (xpData.streak === 1 ? ' day' : ' days');
   $('streak-flame').classList.toggle('streak-active', xpData.streak >= 2);
@@ -290,22 +335,144 @@ function escHtml(s) {
   });
 }
 
+function modeLabel(mode) {
+  if (mode === 'math') return 'Math';
+  if (mode === 'rw') return 'Reading & Writing';
+  return 'Both';
+}
+
+function setIntroMode(mode) {
+  introMode = mode || 'all';
+  Array.from(document.querySelectorAll('.mode-option')).forEach(function(btn) {
+    btn.classList.toggle('active', btn.getAttribute('data-mode') === introMode);
+  });
+}
+
+function renderUserList() {
+  var users = Store.getUsers();
+  var card = $('returning-users-card');
+  var listEl = $('user-list');
+  listEl.innerHTML = '';
+  card.classList.toggle('hidden', users.length === 0);
+
+  users
+    .slice()
+    .sort(function(a, b) { return String(b.lastSeen || '').localeCompare(String(a.lastSeen || '')); })
+    .forEach(function(user) {
+      var row = document.createElement('div');
+      row.className = 'user-row';
+      row.innerHTML = '<span><b>' + escHtml(user.handle) + '</b><span>' + modeLabel(user.mode) + '</span></span>';
+
+      var actions = document.createElement('div');
+      actions.className = 'user-actions';
+
+      var continueBtn = document.createElement('button');
+      continueBtn.className = 'user-action continue';
+      continueBtn.type = 'button';
+      continueBtn.textContent = 'Continue';
+      continueBtn.onclick = function() {
+        Store.setActiveUser(user.slug);
+        startAppForActiveUser();
+      };
+
+      var deleteBtn = document.createElement('button');
+      deleteBtn.className = 'user-action delete';
+      deleteBtn.type = 'button';
+      deleteBtn.textContent = 'Delete';
+      deleteBtn.onclick = function() {
+        openDeleteUserModal(user);
+      };
+
+      actions.appendChild(continueBtn);
+      actions.appendChild(deleteBtn);
+      row.appendChild(actions);
+      listEl.appendChild(row);
+    });
+}
+
+function openDeleteUserModal(user) {
+  pendingDeleteUser = user;
+  $('delete-user-copy').innerHTML = 'This will permanently delete <b>' + escHtml(user.handle) + '</b>, including saved answers, flags, XP, and streak data.';
+  $('delete-user-modal').classList.remove('hidden');
+}
+
+function closeDeleteUserModal() {
+  pendingDeleteUser = null;
+  $('delete-user-modal').classList.add('hidden');
+}
+
+function confirmDeleteUser() {
+  if (!pendingDeleteUser) return;
+  Store.deleteUser(pendingDeleteUser.slug);
+  closeDeleteUserModal();
+  renderUserList();
+}
+
+function showIntro() {
+  $('intro-screen').classList.remove('hidden');
+  $('app-shell').classList.add('hidden');
+  $('intro-error').classList.add('hidden');
+  renderUserList();
+  var users = Store.getUsers();
+  if (users.length > 0) setIntroMode(users[0].mode || 'all');
+}
+
+function updateUserUI() {
+  var user = Store.getActiveUser();
+  $('change-user').textContent = user ? user.handle : 'Choose user';
+}
+
+function startAppForActiveUser() {
+  var user = Store.getActiveUser();
+  if (!user) {
+    showIntro();
+    return;
+  }
+
+  state = Store.getState();
+  reviewMode = false;
+  pos = 0;
+  $('f-section').value = user.mode || 'all';
+  $('intro-screen').classList.add('hidden');
+  $('app-shell').classList.remove('hidden');
+  updateUserUI();
+  refreshDomainOptions();
+  buildList();
+  timerReset();
+  render();
+  updateXPBar();
+}
+
+function createUserFromIntro() {
+  var handle = $('intro-handle').value;
+  var user = Store.createOrSelectUser(handle, introMode);
+  if (!user) {
+    $('intro-error').textContent = 'Enter a handle using at least one letter or number.';
+    $('intro-error').classList.remove('hidden');
+    return;
+  }
+  startAppForActiveUser();
+}
+
 function render() {
   // All answered → test complete
   if (list.length > 0 && list.every(function(q){ return state[q.id] && state[q.id].answered; })) {
+    timerStop();
     var tc = list.filter(function(q){ return state[q.id].correct; }).length;
     var tp = Math.round(100*tc/list.length);
     var emoji = tp>=80?'🎉':tp>=60?'👍':'📚';
+    var elapsedText = _fmtTime(timerElapsedMs());
     $('qempty-msg').innerHTML =
       '<div class="tc-emoji">'+emoji+'</div>'+
       '<div class="tc-score">'+tc+' / '+list.length+'</div>'+
       '<div class="tc-pct">'+tp+'% correct</div>'+
+      '<div class="tc-time">Completed in '+elapsedText+'</div>'+
       '<div class="tc-breakdown">'+
         '<span class="score-correct">✓ '+tc+' correct</span> &nbsp; '+
         '<span class="score-wrong">✗ '+(list.length-tc)+' wrong</span>'+
       '</div>';
     $('exitreviewbtn').textContent = 'New Test →';
-    $('exitreviewbtn').onclick = function(){ pos=0; buildList(); render(); };
+    $('exitreviewbtn').onclick = function(){ pos=0; buildList(); timerReset(); render(); };
     $('exitreviewbtn').classList.remove('hidden');
     $('qempty').classList.remove('hidden');
     $('qcontent').classList.add('hidden');
@@ -586,9 +753,9 @@ function refreshDomainOptions() {
   else sel.value = 'all';
 }
 
-$('f-section').onchange = function() { refreshDomainOptions(); reviewMode = false; pos = 0; buildList(); render(); updateTimerUI(); };
-$('f-domain').onchange  = function() { pos = 0; buildList(); render(); };
-$('f-order').onchange   = function() { pos = 0; buildList(); render(); };
+$('f-section').onchange = function() { Store.saveUserMode($('f-section').value); refreshDomainOptions(); reviewMode = false; pos = 0; buildList(); timerReset(); render(); };
+$('f-domain').onchange  = function() { pos = 0; buildList(); timerReset(); render(); };
+$('f-order').onchange   = function() { pos = 0; buildList(); timerReset(); render(); };
 $('checkbtn').onclick   = checkMC;
 $('gridsubmit').onclick = checkGrid;
 $('gridinput').addEventListener('keydown', function(e) { if (e.key === 'Enter') checkGrid(); });
@@ -600,7 +767,7 @@ $('prevbtn').onclick    = prev;
 $('reviewflagged').onclick = function() {
   reviewMode = true;
   $('tab-practice').click();
-  pos = 0; buildList(); render();
+  pos = 0; buildList(); timerReset(); render();
 };
 $('resetbtn').onclick = function() {
   if (confirm('Reset all answers, scores, and flags? This cannot be undone.')) {
@@ -609,6 +776,7 @@ $('resetbtn').onclick = function() {
     pos = 0;
     reviewMode = false;
     buildList();
+    timerReset();
     render();
     // Always land on the Practice tab so the user sees questions immediately
     $('tab-practice').classList.add('active');
@@ -639,15 +807,39 @@ $('tab-progress').onclick = function() {
 };
 
 $('cel-close').onclick    = function() { $('celebration-modal').classList.add('hidden'); };
+$('delete-user-cancel').onclick = closeDeleteUserModal;
+$('delete-user-confirm').onclick = confirmDeleteUser;
+$('delete-user-modal').onclick = function(e) {
+  if (e.target === $('delete-user-modal')) closeDeleteUserModal();
+};
 $('timer-toggle').onclick = timerToggle;
 $('timer-reset').onclick  = timerReset;
+$('intro-start').onclick  = createUserFromIntro;
+$('intro-handle').addEventListener('keydown', function(e) { if (e.key === 'Enter') createUserFromIntro(); });
+$('change-user').onclick = function() {
+  Store.clearActiveUser();
+  timerReset();
+  showIntro();
+};
+$('brand-home').onclick = function() {
+  Store.clearActiveUser();
+  timerReset();
+  showIntro();
+};
+Array.from(document.querySelectorAll('.mode-option')).forEach(function(btn) {
+  btn.onclick = function() { setIntroMode(btn.getAttribute('data-mode')); };
+});
 
 /* ═══════════════════════════════════════════
    INIT
 ═══════════════════════════════════════════ */
 $('bankcount').textContent = QUESTIONS.length + ' questions';
-refreshDomainOptions();
-buildList();
-render();
-updateXPBar();
-updateTimerUI();
+Store.init(function() {
+  state = Store.getState();
+  setIntroMode(introMode);
+  if (Store.getActiveUser()) {
+    startAppForActiveUser();
+  } else {
+    showIntro();
+  }
+});

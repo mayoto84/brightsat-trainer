@@ -7,14 +7,44 @@
 <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-<div class="wrap">
+<section class="intro-screen" id="intro-screen">
+  <div class="intro-panel">
+    <div class="intro-brand">
+      <h1>BrightSAT Trainer</h1>
+      <p class="sub">Choose your SAT practice mode and save progress under your handle.</p>
+    </div>
+
+    <div class="intro-card">
+      <label for="intro-handle">Handle</label>
+      <input id="intro-handle" class="intro-input" type="text" maxlength="32" placeholder="e.g. Lucario" autocomplete="off">
+
+      <div class="intro-mode-label">Train</div>
+      <div class="mode-grid" id="intro-mode">
+        <button class="mode-option active" type="button" data-mode="math">Math</button>
+        <button class="mode-option" type="button" data-mode="rw">Reading &amp; Writing</button>
+        <button class="mode-option" type="button" data-mode="all">Both</button>
+      </div>
+
+      <button class="btn intro-start" id="intro-start">Start training</button>
+      <p class="intro-error hidden" id="intro-error"></p>
+    </div>
+
+    <div class="intro-card hidden" id="returning-users-card">
+      <div class="intro-mode-label">Returning users</div>
+      <div class="user-list" id="user-list"></div>
+    </div>
+  </div>
+</section>
+
+<div class="wrap hidden" id="app-shell">
 
   <header class="top">
     <div>
-      <h1>BrightSAT Trainer</h1>
+      <button class="brand-button" id="brand-home" type="button">BrightSAT Trainer</button>
       <span class="sub" id="bankcount"></span>
     </div>
     <div class="xp-bar">
+      <button class="user-chip" id="change-user" type="button"></button>
       <div class="streak-badge">
         <span class="flame" id="streak-flame">🔥</span>
         <span id="header-streak">0 days</span>
@@ -67,8 +97,8 @@
           <span class="timer-section-badge" id="timer-section-badge"></span>
         </div>
         <div class="timer-controls">
-          <button class="btn subtle" id="timer-toggle">▶ Start</button>
-          <button class="btn subtle" id="timer-reset">↺ Reset</button>
+          <button class="btn subtle" id="timer-toggle">Start</button>
+          <button class="btn subtle" id="timer-reset">Reset</button>
         </div>
       </div>
 
@@ -207,6 +237,19 @@
     <h2 id="celebration-text"></h2>
     <p id="celebration-bonus"></p>
     <button class="btn" id="cel-close">Keep going!</button>
+  </div>
+</div>
+
+<!-- Delete user confirmation modal -->
+<div class="confirm-modal hidden" id="delete-user-modal">
+  <div class="confirm-box" role="dialog" aria-modal="true" aria-labelledby="delete-user-title">
+    <div class="confirm-icon">!</div>
+    <h2 id="delete-user-title">Delete user?</h2>
+    <p id="delete-user-copy"></p>
+    <div class="confirm-actions">
+      <button class="btn subtle" id="delete-user-cancel">Cancel</button>
+      <button class="btn danger" id="delete-user-confirm">Delete user</button>
+    </div>
   </div>
 </div>
 
