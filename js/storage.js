@@ -130,6 +130,12 @@ var Store = (function () {
         return;
       }
       _hydrateLocalCache();
+      var localHost = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(window.location.hostname);
+      if (!localHost) {
+        INIT_DONE = true;
+        if (done) done();
+        return;
+      }
       fetch('/api/store', { cache: 'no-store' })
         .then(function(res) {
           if (!res.ok) throw new Error('No server store');
