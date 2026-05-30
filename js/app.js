@@ -66,16 +66,17 @@ function buildList() {
     : QUESTIONS.filter(function(q) {
         return (sec === 'all' || q.section === sec) && (dom === 'all' || q.domain === dom);
       });
-  // Always shuffle for variety, then apply sort preference, then cap at TEST_SIZE
+  // Always shuffle individual questions for variety
   arr = arr.slice();
   for (var i = arr.length - 1; i > 0; i--) {
     var j = Math.floor(Math.random() * (i + 1));
     var tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
   }
+  // "Unanswered first" priority: bubble unanswered to front, preserve shuffle within groups
   if (ord === 'unanswered') {
-    arr.sort(function(a, b) {
-      return (state[b.id] && state[b.id].answered ? 0 : 1) - (state[a.id] && state[a.id].answered ? 0 : 1);
-    });
+    var unanswered = arr.filter(function(q) { return !state[q.id] || !state[q.id].answered; });
+    var answered   = arr.filter(function(q) { return state[q.id] && state[q.id].answered; });
+    arr = unanswered.concat(answered);
   }
   if (!reviewMode) arr = arr.slice(0, TEST_SIZE);
   list = arr;

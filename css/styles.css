@@ -219,9 +219,65 @@ body {
 }
 
 /* ═══════════════════════════════════════════
-   LAYOUT
+   LAYOUT — full-height, no page scroll
 ═══════════════════════════════════════════ */
-.wrap { max-width: 780px; margin: 0 auto; padding: 16px 14px 100px; }
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+
+.wrap {
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 0 14px;
+  height: 100%;        /* fills body which fills html which fills viewport */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Fixed-height regions at the top */
+header.top { flex-shrink: 0; padding-top: 12px; }
+#app-tagline { flex-shrink: 0; }
+.tabs { flex-shrink: 0; }
+
+/* Practice view fills remaining space as a flex column */
+#view-practice {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  gap: 10px;
+  padding-bottom: 10px;
+}
+
+/* Cards inside the practice view don't need their own bottom margin */
+#view-practice > .card { margin-bottom: 0; }
+
+/* Timer card never shrinks */
+#timer-card { flex-shrink: 0; }
+#filter-card { flex-shrink: 0; }
+
+/* Question card expands to fill remaining space; scrolls internally */
+#qcard {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+/* Ready card: natural height, centered content, doesn't fill the screen */
+#test-ready-card {
+  flex: none;
+}
+
+/* Progress view scrolls normally — it's a data page, not a test */
+#view-progress {
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: 20px;
+}
+#view-progress > .card { margin-bottom: 14px; }
 
 /* ═══════════════════════════════════════════
    HEADER
