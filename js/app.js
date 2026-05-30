@@ -378,7 +378,7 @@ function renderUserList() {
   var card = $('returning-users-card');
   var listEl = $('user-list');
   listEl.innerHTML = '';
-  card.classList.toggle('hidden', users.length === 0);
+  card.classList.toggle('hidden', users.length <= 1);
 
   users
     .slice()
@@ -415,6 +415,16 @@ function renderUserList() {
     });
 }
 
+function showNewUserForm() {
+  $('welcome-card').classList.add('hidden');
+  $('new-user-card').classList.remove('hidden');
+  $('add-user-btn').classList.add('hidden');
+  $('intro-handle').value = '';
+  $('intro-error').classList.add('hidden');
+  setIntroMode('math');
+  refreshIntroDomainOptions('all');
+}
+
 function openDeleteUserModal(user) {
   pendingDeleteUser = user;
   $('delete-user-copy').innerHTML = 'This will permanently delete <b>' + escHtml(user.handle) + '</b>, including saved answers, flags, XP, and streak data.';
@@ -430,7 +440,7 @@ function confirmDeleteUser() {
   if (!pendingDeleteUser) return;
   Store.deleteUser(pendingDeleteUser.slug);
   closeDeleteUserModal();
-  renderUserList();
+  showIntro();
 }
 
 function showIntro() {
@@ -438,12 +448,23 @@ function showIntro() {
   $('app-shell').classList.add('hidden');
   $('intro-error').classList.add('hidden');
   renderUserList();
+  var active = Store.getActiveUser();
   var users = Store.getUsers();
-  if (users.length > 0) {
-    setIntroMode(users[0].mode || 'all');
-    refreshIntroDomainOptions(users[0].domain || 'all');
+
+  if (active) {
+    $('welcome-title').textContent = 'Welcome Back ' + active.handle;
+    $('welcome-copy').textContent = userFocusLabel(active);
+    $('welcome-card').classList.remove('hidden');
+    $('new-user-card').classList.add('hidden');
+    $('add-user-btn').classList.remove('hidden');
+    setIntroMode(active.mode || 'all');
+    refreshIntroDomainOptions(active.domain || 'all');
+  } else if (users.length > 0) {
+    var latest = users.slice().sort(function(a, b) { return String(b.lastSeen || '').localeCompare(String(a.lastSeen || '')); })[0];
+    Store.setActiveUser(latest.slug);
+    showIntro();
   } else {
-    refreshIntroDomainOptions('all');
+    showNewUserForm();
   }
 }
 
@@ -848,15 +869,15 @@ $('delete-user-modal').onclick = function(e) {
 $('timer-toggle').onclick = timerToggle;
 $('timer-reset').onclick  = timerReset;
 $('intro-start').onclick  = createUserFromIntro;
+$('welcome-start').onclick = startAppForActiveUser;
+$('add-user-btn').onclick = showNewUserForm;
 $('intro-handle').addEventListener('keydown', function(e) { if (e.key === 'Enter') createUserFromIntro(); });
 $('intro-domain').onchange = function() { introDomain = $('intro-domain').value || 'all'; };
 $('change-user').onclick = function() {
-  Store.clearActiveUser();
   timerReset();
   showIntro();
 };
 $('brand-home').onclick = function() {
-  Store.clearActiveUser();
   timerReset();
   showIntro();
 };

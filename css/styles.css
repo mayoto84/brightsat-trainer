@@ -116,6 +116,19 @@ body {
 .intro-start {
   width: 100%;
 }
+.intro-secondary {
+  width: 100%;
+}
+.welcome-title {
+  margin: 0 0 6px;
+  color: var(--accent-dark);
+  font-size: 24px;
+}
+.welcome-copy {
+  margin: 0 0 16px;
+  color: var(--muted);
+  font-size: 14px;
+}
 .intro-error {
   margin: 10px 0 0;
   color: var(--bad);
