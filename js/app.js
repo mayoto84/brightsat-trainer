@@ -40,6 +40,18 @@ function playWrongSound() {
   osc.start(ctx.currentTime);
   osc.stop(ctx.currentTime + 0.28);
 }
+function playStartSound() {
+  // Rising three-note fanfare — energetic but quick
+  [[330, 0], [440, 0.10], [523, 0.20], [659, 0.32]].forEach(function(p) {
+    _tone(p[0], 'sine', p[1], 0.18, 0.22);
+  });
+}
+function playCompleteSound() {
+  // Triumphant ascending chord sweep
+  [[262, 0], [330, 0.08], [392, 0.16], [523, 0.26], [659, 0.38]].forEach(function(p) {
+    _tone(p[0], 'sine', p[1], 0.45, 0.28);
+  });
+}
 
 /* ═══════════════════════════════════════════
    QUESTIONS  (assembled from data files)
@@ -203,9 +215,10 @@ function timerToggle() {
     $('timer-toggle').textContent = 'Resume';
   } else {
     if (timer.pausedMs === 0 && timer.sessionAnswered === 0) {
-      // Fresh start — hide filters, show question card
+      // Fresh start — hide filters, show question card, play fanfare
       collapseFilters();
       showQuestionCard();
+      playStartSound();
     }
     timer.startMs = Date.now();
     timer.running = true;
@@ -639,6 +652,7 @@ function render() {
     if (!reviewMode && !completedTestRecorded && timer.sessionAnswered > 0) {
       Store.recordPracticeComplete($('f-section').value);
       completedTestRecorded = true;
+      playCompleteSound();
     }
     timerStop();
     var tc = list.filter(function(q){ return state[q.id].correct; }).length;
