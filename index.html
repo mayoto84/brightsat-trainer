@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BrightSAT Trainer</title>
-<link rel="stylesheet" href="css/styles.css?v=20260530f">
+<link rel="stylesheet" href="css/styles.css?v=20260530g">
 </head>
 <body>
 <section class="intro-screen" id="intro-screen">
@@ -122,19 +122,21 @@
       <div class="timer-stats">
         <div class="tstat">
           <div class="tstat-val" id="tstat-required">—</div>
-          <div class="tstat-lbl">Required Q/min</div>
+          <div class="tstat-lbl">SAT pace</div>
+          <div class="tstat-sub">questions / min</div>
         </div>
         <div class="tstat" id="tstat-pace-wrap">
           <div class="tstat-val" id="tstat-pace">—</div>
-          <div class="tstat-lbl">Your Q/min</div>
+          <div class="tstat-lbl">Your pace</div>
+          <div class="tstat-sub">questions / min</div>
         </div>
-        <div class="tstat">
-          <div class="tstat-val" id="tstat-target">—</div>
-          <div class="tstat-lbl">Target by now</div>
+        <div class="tstat tstat-correct">
+          <div class="tstat-val" id="tstat-correct">0</div>
+          <div class="tstat-lbl">Correct</div>
         </div>
-        <div class="tstat">
-          <div class="tstat-val" id="tstat-answered">0</div>
-          <div class="tstat-lbl">Session answered</div>
+        <div class="tstat tstat-wrong">
+          <div class="tstat-val" id="tstat-wrong">0</div>
+          <div class="tstat-lbl">Incorrect</div>
         </div>
       </div>
 
@@ -147,6 +149,7 @@
           <span class="pace-legend-item pace-legend-fill">&#9646; Answered</span>
           <span class="pace-legend-item pace-legend-needle">&#x2502; Target</span>
           <span class="pace-status-text" id="pace-status-text"></span>
+          <span class="pace-progress" id="pace-progress"></span>
         </div>
       </div>
     </div>
@@ -279,7 +282,7 @@
 <script src="data/reading.js?v=20260530"></script>
 <script src="data/writing.js?v=20260530"></script>
 <!-- Engine (depends on data + storage) -->
-<script src="js/storage.js?v=20260530f"></script>
-<script src="js/app.js?v=20260530f"></script>
+<script src="js/storage.js?v=20260530g"></script>
+<script src="js/app.js?v=20260530g"></script>
 </body>
 </html>

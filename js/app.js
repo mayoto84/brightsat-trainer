@@ -231,15 +231,24 @@ function updateTimerUI() {
   var allocMin = Math.round(limitMs / 60000);
   $('timer-section-badge').textContent = rate.label + ' · ' + questionCount + ' questions · ' + allocMin + ' min';
 
-  $('tstat-required').textContent = rate.qPerMin.toFixed(2);
-  $('tstat-answered').textContent = timer.sessionAnswered;
+  $('tstat-required').textContent = rate.qPerMin.toFixed(1);
+
+  // Correct / incorrect counts from session answers
+  var sessionCorrect = list.filter(function(q) {
+    return state[q.id] && state[q.id].answered && state[q.id].correct;
+  }).length;
+  var sessionWrong = list.filter(function(q) {
+    return state[q.id] && state[q.id].answered && !state[q.id].correct;
+  }).length;
+  $('tstat-correct').textContent = sessionCorrect;
+  $('tstat-wrong').textContent   = sessionWrong;
+  $('pace-progress').textContent = timer.sessionAnswered + ' / ' + questionCount;
 
   // Not enough time for meaningful stats yet
   if (elapsedMin < 0.05) {
-    $('tstat-pace').textContent   = '—';
-    $('tstat-target').textContent = '0';
-    $('pace-fill').style.width    = '0%';
-    $('pace-needle').style.left   = '0%';
+    $('tstat-pace').textContent = '—';
+    $('pace-fill').style.width  = '0%';
+    $('pace-needle').style.left = '0%';
     var st0 = $('pace-status-text');
     st0.textContent = remaining === 0 ? 'Time expired' : '';
     st0.className   = 'pace-status-text';
@@ -247,12 +256,11 @@ function updateTimerUI() {
     return;
   }
 
-  var actualRate   = timer.sessionAnswered / elapsedMin;
-  var targetByNow  = Math.min(questionCount, elapsedMin * rate.qPerMin);
-  var diff         = timer.sessionAnswered - targetByNow; // + ahead, − behind
+  var actualRate  = timer.sessionAnswered / elapsedMin;
+  var targetByNow = Math.min(questionCount, elapsedMin * rate.qPerMin);
+  var diff        = timer.sessionAnswered - targetByNow; // + ahead, − behind
 
-  $('tstat-pace').textContent   = actualRate.toFixed(2);
-  $('tstat-target').textContent = Math.ceil(targetByNow);
+  $('tstat-pace').textContent = actualRate.toFixed(1);
 
   // Pace bar: position relative to the active practice set size.
   var totalQ    = questionCount;

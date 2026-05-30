@@ -782,6 +782,20 @@ h3.sec {
   margin-top: 3px;
   line-height: 1.2;
 }
+.tstat-sub {
+  font-size: 9px;
+  color: var(--muted);
+  opacity: 0.7;
+  line-height: 1.2;
+}
+.tstat-correct .tstat-val { color: var(--good); }
+.tstat-wrong  .tstat-val  { color: var(--bad); }
+.pace-progress {
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+}
 
 /* Pace track (bar + needle) */
 .pace-track-wrap { }
