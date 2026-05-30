@@ -790,8 +790,12 @@ function render() {
   $('explainbtn').textContent = ex.classList.contains('hidden') ? 'Show explanation' : 'Hide explanation';
 
   // Nav
+  var isLast = pos === list.length - 1;
+  var hasUnanswered = list.some(function(q) { return !state[q.id] || !state[q.id].answered; });
   $('prevbtn').disabled = pos === 0;
-  $('nextbtn').disabled = pos === list.length - 1;
+  // Disable Next only when at the last position AND the current question isn't answered yet
+  $('nextbtn').disabled = isLast && !answered;
+  $('nextbtn').textContent = (isLast && answered && hasUnanswered) ? 'Review remaining →' : 'Next →';
   $('qpos').textContent = 'Question ' + (pos + 1) + ' of ' + list.length;
   var doneInList    = list.filter(function(x){ return state[x.id] && state[x.id].answered; }).length;
   var correctInList = list.filter(function(x){ return state[x.id] && state[x.id].answered && state[x.id].correct; }).length;
@@ -834,7 +838,12 @@ function slideUpFeedback(correct) {
   }, 1800);
 }
 
-function next() { if (pos < list.length - 1) { pos++; explainOpen = false; render(); } }
+function next() {
+  if (pos < list.length - 1) { pos++; explainOpen = false; render(); return; }
+  // At last position — jump to first unanswered question if any
+  var firstUnanswered = list.findIndex(function(q) { return !state[q.id] || !state[q.id].answered; });
+  if (firstUnanswered !== -1) { pos = firstUnanswered; explainOpen = false; render(); }
+}
 function prev() { if (pos > 0) { pos--; explainOpen = false; render(); } }
 function toggleFlag() {
   var q = list[pos];
