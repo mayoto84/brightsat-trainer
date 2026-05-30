@@ -525,9 +525,21 @@ button.btn.flagged { color: var(--flag); border-color: var(--flag); background: 
 button.btn:disabled { opacity: 0.45; cursor: default; }
 
 /* ═══════════════════════════════════════════
-   NAV
+   NAV — sticky so Prev/Next are always visible
 ═══════════════════════════════════════════ */
-.nav { display: flex; justify-content: space-between; gap: 8px; margin-top: 14px; }
+.nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 14px;
+  position: sticky;
+  bottom: 0;
+  background: var(--card);
+  padding: 10px 16px 4px;
+  margin-left: -16px;
+  margin-right: -16px;
+  border-top: 1px solid var(--line);
+}
 
 /* ═══════════════════════════════════════════
    FEEDBACK INLINE  (compact one-liner)
@@ -924,6 +936,7 @@ h3.sec {
   }
   .wrap { padding-left: 10px; padding-right: 10px; }
   .card { padding: 14px; }
+  .nav { padding-left: 14px; padding-right: 14px; margin-left: -14px; margin-right: -14px; }
   .timer-top { align-items: stretch; }
   .timer-left {
     flex-basis: 100%;
