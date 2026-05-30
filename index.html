@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BrightSAT Trainer</title>
-<link rel="stylesheet" href="css/styles.css?v=20260530d">
+<link rel="stylesheet" href="css/styles.css?v=20260530f">
 </head>
 <body>
 <section class="intro-screen" id="intro-screen">
@@ -65,7 +65,7 @@
     </div>
   </header>
 
-  <p class="sub">Open practice in the Digital SAT format. No login required. Pick answers, check them, and read how each one is solved. Progress and estimated scores are saved automatically.</p>
+  <p class="sub" id="app-tagline">Practice real SAT questions, get instant explanations, and track your score — all saved automatically.</p>
 
   <div class="tabs">
     <button class="tab active" id="tab-practice">Practice</button>
@@ -74,8 +74,12 @@
 
   <!-- ── PRACTICE VIEW ─────────────────────── -->
   <section id="view-practice">
-    <div class="card">
-      <div class="filters">
+    <div class="card" id="filter-card">
+      <div class="filter-summary" id="filter-summary">
+        <span class="filter-summary-text" id="filter-summary-text"></span>
+        <button class="btn subtle filter-edit-btn" id="filter-edit-btn" type="button">Change</button>
+      </div>
+      <div class="filters" id="filters-panel">
         <div class="field">
           <label for="f-section">Section</label>
           <select id="f-section">
@@ -109,6 +113,7 @@
           <span class="timer-section-badge" id="timer-section-badge"></span>
         </div>
         <div class="timer-controls">
+          <button class="btn subtle timer-change-btn hidden" id="timer-change-btn" type="button">Change test</button>
           <button class="btn subtle" id="timer-toggle">Start</button>
           <button class="btn subtle" id="timer-reset">Reset</button>
         </div>
@@ -146,7 +151,11 @@
       </div>
     </div>
 
-    <div class="card" id="qcard">
+    <div class="card test-ready-card" id="test-ready-card">
+      <p class="test-ready-msg">Choose your section and topic above, then press <strong>Start</strong> when you're ready.</p>
+    </div>
+
+    <div class="card hidden" id="qcard">
       <!-- empty-state (shown when no questions match the current filter) -->
       <div id="qempty" class="hidden">
         <p id="qempty-msg" style="color:var(--muted);margin:0 0 12px"></p>
@@ -270,7 +279,7 @@
 <script src="data/reading.js?v=20260530"></script>
 <script src="data/writing.js?v=20260530"></script>
 <!-- Engine (depends on data + storage) -->
-<script src="js/storage.js?v=20260530d"></script>
-<script src="js/app.js?v=20260530d"></script>
+<script src="js/storage.js?v=20260530f"></script>
+<script src="js/app.js?v=20260530f"></script>
 </body>
 </html>

@@ -118,9 +118,9 @@ function gridCorrect(input, accepts) {
 // Official Digital SAT timing per module (one of two modules per section).
 // The countdown scales this pacing to the active practice set size.
 var SAT_RATES = {
-  rw:   { qPerMin: 27 / 32, totalQ: 27, label: 'R&W Module (27 Q / 32 min)' },
-  math: { qPerMin: 22 / 35, totalQ: 22, label: 'Math Module (22 Q / 35 min)' },
-  all:  { qPerMin: 49 / 64, totalQ: 49, label: 'Mixed (49 Q / 64 min est.)' }
+  rw:   { qPerMin: 27 / 32, totalQ: 27, label: 'Reading & Writing', minutes: 32 },
+  math: { qPerMin: 22 / 35, totalQ: 22, label: 'Math', minutes: 35 },
+  all:  { qPerMin: 49 / 64, totalQ: 49, label: 'Mixed', minutes: 64 }
 };
 
 var timer = {
@@ -160,6 +160,11 @@ function timerToggle() {
     clearInterval(timer._tick);
     $('timer-toggle').textContent = 'Resume';
   } else {
+    if (timer.pausedMs === 0 && timer.sessionAnswered === 0) {
+      // Fresh start — hide filters, show question card
+      collapseFilters();
+      showQuestionCard();
+    }
     timer.startMs = Date.now();
     timer.running = true;
     timer._tick = setInterval(updateTimerUI, 500);
@@ -174,7 +179,10 @@ function timerReset() {
   timer.startMs = null;
   timer.pausedMs = 0;
   timer.sessionAnswered = 0;
+  completedTestRecorded = false;
   $('timer-toggle').textContent = 'Start';
+  expandFilters();
+  hideQuestionCard();
   updateTimerUI();
 }
 
@@ -220,7 +228,8 @@ function updateTimerUI() {
 
   var rate = _timerRate();
   var questionCount = Math.max(1, list.length || TEST_SIZE);
-  $('timer-section-badge').textContent = rate.label + ' - ' + questionCount + ' Q in ' + _fmtTime(limitMs);
+  var allocMin = Math.round(limitMs / 60000);
+  $('timer-section-badge').textContent = rate.label + ' · ' + questionCount + ' questions · ' + allocMin + ' min';
 
   $('tstat-required').textContent = rate.qPerMin.toFixed(2);
   $('tstat-answered').textContent = timer.sessionAnswered;
@@ -478,6 +487,26 @@ function showIntro() {
 function updateUserUI() {
   var user = Store.getActiveUser();
   $('change-user').textContent = user ? user.handle : 'Choose user';
+}
+
+function collapseFilters() {
+  $('filter-card').classList.add('filters-hidden');
+  $('timer-change-btn').classList.remove('hidden');
+}
+
+function expandFilters() {
+  $('filter-card').classList.remove('filters-hidden');
+  $('timer-change-btn').classList.add('hidden');
+}
+
+function showQuestionCard() {
+  $('test-ready-card').classList.add('hidden');
+  $('qcard').classList.remove('hidden');
+}
+
+function hideQuestionCard() {
+  $('test-ready-card').classList.remove('hidden');
+  $('qcard').classList.add('hidden');
 }
 
 function renderWelcomeStats() {
@@ -849,6 +878,8 @@ function refreshDomainOptions() {
 $('f-section').onchange = function() { Store.saveUserMode($('f-section').value, 'all'); refreshDomainOptions(); reviewMode = false; pos = 0; buildList(); timerReset(); render(); };
 $('f-domain').onchange  = function() { Store.saveUserMode($('f-section').value, $('f-domain').value); pos = 0; buildList(); timerReset(); render(); };
 $('f-order').onchange   = function() { pos = 0; buildList(); timerReset(); render(); };
+$('filter-edit-btn').onclick = expandFilters;
+$('timer-change-btn').onclick = function() { timerReset(); };
 $('checkbtn').onclick   = checkMC;
 $('gridsubmit').onclick = checkGrid;
 $('gridinput').addEventListener('keydown', function(e) { if (e.key === 'Enter') checkGrid(); });
@@ -860,7 +891,7 @@ $('prevbtn').onclick    = prev;
 $('reviewflagged').onclick = function() {
   reviewMode = true;
   $('tab-practice').click();
-  pos = 0; buildList(); timerReset(); render();
+  pos = 0; buildList(); timerReset(); collapseFilters(); showQuestionCard(); render();
 };
 $('resetbtn').onclick = function() {
   if (confirm('Reset all answers, scores, and flags? This cannot be undone.')) {
@@ -931,7 +962,7 @@ Array.from(document.querySelectorAll('.mode-option')).forEach(function(btn) {
 /* ═══════════════════════════════════════════
    INIT
 ═══════════════════════════════════════════ */
-$('bankcount').textContent = QUESTIONS.length + ' questions';
+$('bankcount').textContent = TEST_SIZE + '-question practice tests';
 Store.init(function() {
   state = Store.getState();
   setIntroMode(introMode);

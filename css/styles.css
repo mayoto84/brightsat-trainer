@@ -309,7 +309,37 @@ h1 { font-size: 22px; margin: 0; letter-spacing: -0.2px; }
 /* ═══════════════════════════════════════════
    FILTERS
 ═══════════════════════════════════════════ */
-.filters { display: flex; gap: 8px; flex-wrap: wrap; align-items: flex-end; }
+.filter-summary {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.filter-summary-text {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.filter-edit-btn {
+  padding: 5px 10px;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+#filter-card.filters-collapsed .filter-summary { display: flex; }
+#filter-card.filters-collapsed #filters-panel { display: none; }
+#filter-card.filters-hidden { display: none; }
+.test-ready-card {
+  text-align: center;
+  padding: 28px 16px;
+}
+.test-ready-msg {
+  margin: 0;
+  color: var(--muted);
+  font-size: 15px;
+}
+.timer-change-btn { font-size: 12px; }
+.filters { display: flex; gap: 8px; flex-wrap: wrap; align-items: flex-end; margin-bottom: 4px; }
 .filters label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 3px; font-weight: 600; }
 .filters .field { flex: 1; min-width: 140px; }
 select {
