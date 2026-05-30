@@ -129,6 +129,35 @@ body {
   color: var(--muted);
   font-size: 14px;
 }
+.welcome-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, 92px);
+  gap: 8px;
+  justify-content: center;
+}
+.welcome-stat {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fbfcfe;
+  padding: 9px 7px;
+  text-align: center;
+  min-width: 0;
+}
+.welcome-stat b {
+  display: block;
+  color: var(--accent-dark);
+  font-size: 18px;
+  line-height: 1.1;
+}
+.welcome-stat span {
+  display: block;
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
 .intro-error {
   margin: 10px 0 0;
   color: var(--bad);
@@ -783,6 +812,7 @@ h3.sec {
   .intro-screen { align-items: flex-start; }
   .intro-brand h1 { font-size: 26px; }
   .mode-grid { grid-template-columns: 1fr; }
+  .welcome-stats { grid-template-columns: 1fr 1fr; }
   .user-row {
     align-items: stretch;
     flex-direction: column;

@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BrightSAT Trainer</title>
-<link rel="stylesheet" href="css/styles.css?v=20260530c">
+<link rel="stylesheet" href="css/styles.css?v=20260530d">
 </head>
 <body>
 <section class="intro-screen" id="intro-screen">
@@ -16,14 +16,16 @@
 
     <div class="intro-card hidden" id="welcome-card">
       <h2 class="welcome-title" id="welcome-title"></h2>
-      <p class="welcome-copy" id="welcome-copy"></p>
-      <button class="btn intro-start" id="welcome-start">Start training</button>
+      <div class="welcome-stats" id="welcome-stats"></div>
     </div>
 
     <div class="intro-card" id="new-user-card">
       <label for="intro-handle">Handle</label>
       <input id="intro-handle" class="intro-input" type="text" maxlength="32" placeholder="e.g. Lucario" autocomplete="off">
+      <p class="intro-error hidden" id="intro-error"></p>
+    </div>
 
+    <div class="intro-card" id="training-options-card">
       <div class="intro-mode-label">Train</div>
       <div class="mode-grid" id="intro-mode">
         <button class="mode-option active" type="button" data-mode="math">Math</button>
@@ -35,7 +37,6 @@
       <select id="intro-domain" class="intro-select"></select>
 
       <button class="btn intro-start" id="intro-start">Start training</button>
-      <p class="intro-error hidden" id="intro-error"></p>
     </div>
 
     <div class="intro-card hidden" id="returning-users-card">
@@ -269,7 +270,7 @@
 <script src="data/reading.js?v=20260530"></script>
 <script src="data/writing.js?v=20260530"></script>
 <!-- Engine (depends on data + storage) -->
-<script src="js/storage.js?v=20260530c"></script>
-<script src="js/app.js?v=20260530c"></script>
+<script src="js/storage.js?v=20260530d"></script>
+<script src="js/app.js?v=20260530d"></script>
 </body>
 </html>

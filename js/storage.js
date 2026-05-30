@@ -9,6 +9,7 @@ var Store = (function () {
   var REG_KEY = 'brightsat_users';
   var LEGACY_STATE_KEY = 'brightsat_v1';
   var LEGACY_XP_KEY = 'brightsat_xp';
+  var ACTIVITY_KEY = 'brightsat_activity';
   try {
     var _k = '__bst_test__';
     localStorage.setItem(_k, '1');
@@ -119,6 +120,11 @@ var Store = (function () {
   function _xpKey() {
     var user = _activeUser();
     return user ? LEGACY_XP_KEY + '_' + user.slug : LEGACY_XP_KEY;
+  }
+
+  function _activityKey() {
+    var user = _activeUser();
+    return user ? ACTIVITY_KEY + '_' + user.slug : ACTIVITY_KEY;
   }
 
   return {
@@ -232,6 +238,7 @@ var Store = (function () {
       _saveRegistry(reg);
       _remove(LEGACY_STATE_KEY + '_' + slug);
       _remove(LEGACY_XP_KEY + '_' + slug);
+      _remove(ACTIVITY_KEY + '_' + slug);
       return true;
     },
 
@@ -273,6 +280,19 @@ var Store = (function () {
       xpData.sessionCorrect = 0;
       xpData.sessionTotal = 0;
       Store.setXP(xpData);
+    },
+
+    getActivity: function () {
+      return _get(_activityKey(), { completedTests: { math: 0, rw: 0, all: 0 } });
+    },
+    setActivity: function (obj) { _set(_activityKey(), obj); },
+    recordPracticeComplete: function (mode) {
+      var activity = Store.getActivity();
+      if (!activity.completedTests) activity.completedTests = { math: 0, rw: 0, all: 0 };
+      var key = mode === 'math' || mode === 'rw' ? mode : 'all';
+      activity.completedTests[key] = (activity.completedTests[key] || 0) + 1;
+      Store.setActivity(activity);
+      return activity;
     }
   };
 })();

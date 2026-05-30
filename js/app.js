@@ -17,6 +17,7 @@ function saveQ(id, patch) { Store.saveQ(state, id, patch); }
 var introMode = 'math';
 var introDomain = 'all';
 var pendingDeleteUser = null;
+var completedTestRecorded = false;
 
 /* ═══════════════════════════════════════════
    SCORING CURVE  200–800 per section
@@ -78,6 +79,7 @@ function buildList() {
   }
   if (!reviewMode) arr = arr.slice(0, TEST_SIZE);
   list = arr;
+  completedTestRecorded = false;
   if (pos >= list.length) pos = 0;
 }
 
@@ -378,7 +380,7 @@ function renderUserList() {
   var card = $('returning-users-card');
   var listEl = $('user-list');
   listEl.innerHTML = '';
-  card.classList.toggle('hidden', users.length <= 1);
+  card.classList.toggle('hidden', users.length === 0);
 
   users
     .slice()
@@ -417,12 +419,15 @@ function renderUserList() {
 
 function showNewUserForm() {
   $('welcome-card').classList.add('hidden');
+  $('welcome-stats').innerHTML = '';
   $('new-user-card').classList.remove('hidden');
+  $('training-options-card').classList.remove('hidden');
   $('add-user-btn').classList.add('hidden');
   $('intro-handle').value = '';
   $('intro-error').classList.add('hidden');
   setIntroMode('math');
   refreshIntroDomainOptions('all');
+  renderUserList();
 }
 
 function openDeleteUserModal(user) {
@@ -452,10 +457,12 @@ function showIntro() {
   var users = Store.getUsers();
 
   if (active) {
-    $('welcome-title').textContent = 'Welcome Back ' + active.handle;
-    $('welcome-copy').textContent = userFocusLabel(active);
+    state = Store.getState();
+    $('welcome-title').textContent = 'Welcome Back ' + active.handle + '!';
+    renderWelcomeStats();
     $('welcome-card').classList.remove('hidden');
     $('new-user-card').classList.add('hidden');
+    $('training-options-card').classList.remove('hidden');
     $('add-user-btn').classList.remove('hidden');
     setIntroMode(active.mode || 'all');
     refreshIntroDomainOptions(active.domain || 'all');
@@ -471,6 +478,23 @@ function showIntro() {
 function updateUserUI() {
   var user = Store.getActiveUser();
   $('change-user').textContent = user ? user.handle : 'Choose user';
+}
+
+function renderWelcomeStats() {
+  var answered = QUESTIONS.filter(function(q) { return state[q.id] && state[q.id].answered; }).length;
+  var correct = QUESTIONS.filter(function(q) { return state[q.id] && state[q.id].answered && state[q.id].correct; }).length;
+  var accuracy = answered ? Math.round(100 * correct / answered) + '%' : '0%';
+  var xpData = Store.getXP();
+  var activity = Store.getActivity();
+  var completed = activity.completedTests || {};
+  $('welcome-stats').innerHTML =
+    '<div class="welcome-stat"><b>' + answered + '</b><span>Answered</span></div>' +
+    '<div class="welcome-stat"><b>' + accuracy + '</b><span>Accuracy</span></div>' +
+    '<div class="welcome-stat"><b>' + xpData.xp + '</b><span>XP</span></div>' +
+    '<div class="welcome-stat"><b>' + xpData.streak + '</b><span>Day streak</span></div>' +
+    '<div class="welcome-stat"><b>' + (completed.math || 0) + '</b><span>Math tests</span></div>' +
+    '<div class="welcome-stat"><b>' + (completed.rw || 0) + '</b><span>R&W tests</span></div>' +
+    '<div class="welcome-stat"><b>' + (completed.all || 0) + '</b><span>Both tests</span></div>';
 }
 
 function startAppForActiveUser() {
@@ -508,9 +532,24 @@ function createUserFromIntro() {
   startAppForActiveUser();
 }
 
+function startFromIntro() {
+  var active = Store.getActiveUser();
+  introDomain = $('intro-domain').value || 'all';
+  if (active && $('new-user-card').classList.contains('hidden')) {
+    Store.saveUserMode(introMode, introDomain);
+    startAppForActiveUser();
+    return;
+  }
+  createUserFromIntro();
+}
+
 function render() {
   // All answered → test complete
   if (list.length > 0 && list.every(function(q){ return state[q.id] && state[q.id].answered; })) {
+    if (!reviewMode && !completedTestRecorded && timer.sessionAnswered > 0) {
+      Store.recordPracticeComplete($('f-section').value);
+      completedTestRecorded = true;
+    }
     timerStop();
     var tc = list.filter(function(q){ return state[q.id].correct; }).length;
     var tp = Math.round(100*tc/list.length);
@@ -868,10 +907,9 @@ $('delete-user-modal').onclick = function(e) {
 };
 $('timer-toggle').onclick = timerToggle;
 $('timer-reset').onclick  = timerReset;
-$('intro-start').onclick  = createUserFromIntro;
-$('welcome-start').onclick = startAppForActiveUser;
+$('intro-start').onclick  = startFromIntro;
 $('add-user-btn').onclick = showNewUserForm;
-$('intro-handle').addEventListener('keydown', function(e) { if (e.key === 'Enter') createUserFromIntro(); });
+$('intro-handle').addEventListener('keydown', function(e) { if (e.key === 'Enter') startFromIntro(); });
 $('intro-domain').onchange = function() { introDomain = $('intro-domain').value || 'all'; };
 $('change-user').onclick = function() {
   timerReset();
@@ -879,6 +917,11 @@ $('change-user').onclick = function() {
 };
 $('brand-home').onclick = function() {
   timerReset();
+  var users = Store.getUsers();
+  if (!Store.getActiveUser() && users.length > 0) {
+    var latest = users.slice().sort(function(a, b) { return String(b.lastSeen || '').localeCompare(String(a.lastSeen || '')); })[0];
+    Store.setActiveUser(latest.slug);
+  }
   showIntro();
 };
 Array.from(document.querySelectorAll('.mode-option')).forEach(function(btn) {
