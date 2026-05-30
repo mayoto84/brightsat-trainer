@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BrightSAT Trainer</title>
-<link rel="stylesheet" href="css/styles.css?v=20260530u">
+<link rel="stylesheet" href="css/styles.css?v=20260530v">
 </head>
 <body>
 <section class="intro-screen" id="intro-screen">
@@ -16,6 +16,23 @@
 
     <div class="intro-card hidden" id="welcome-card">
       <h2 class="welcome-title" id="welcome-title"></h2>
+      <div class="welcome-score-banner" id="welcome-score-banner">
+        <div class="wsb-total">
+          <div class="wsb-total-num" id="wsb-total">—</div>
+          <div class="wsb-total-lbl">Estimated SAT Score</div>
+        </div>
+        <div class="wsb-subs">
+          <div class="wsb-sub">
+            <span class="wsb-sub-num" id="wsb-math">—</span>
+            <span class="wsb-sub-lbl">Math</span>
+          </div>
+          <div class="wsb-divider"></div>
+          <div class="wsb-sub">
+            <span class="wsb-sub-num" id="wsb-rw">—</span>
+            <span class="wsb-sub-lbl">Reading &amp; Writing</span>
+          </div>
+        </div>
+      </div>
       <div class="welcome-stats" id="welcome-stats"></div>
       <button class="btn subtle welcome-progress-btn" id="welcome-progress-btn" type="button">View my progress →</button>
     </div>
@@ -291,7 +308,7 @@
 <script src="data/reading.js?v=20260530"></script>
 <script src="data/writing.js?v=20260530"></script>
 <!-- Engine (depends on data + storage) -->
-<script src="js/storage.js?v=20260530u"></script>
-<script src="js/app.js?v=20260530u"></script>
+<script src="js/storage.js?v=20260530v"></script>
+<script src="js/app.js?v=20260530v"></script>
 </body>
 </html>

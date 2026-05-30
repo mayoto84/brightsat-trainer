@@ -129,6 +129,64 @@ body {
   margin-top: 10px;
   font-size: 13px;
 }
+
+/* Estimated SAT score banner on welcome screen */
+.welcome-score-banner {
+  background: linear-gradient(135deg, var(--accent-dark) 0%, var(--accent) 100%);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 14px;
+  text-align: center;
+  color: #fff;
+}
+.wsb-total-num {
+  font-size: 52px;
+  font-weight: 800;
+  letter-spacing: -2px;
+  line-height: 1;
+}
+.wsb-total-lbl {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  opacity: 0.8;
+  margin-top: 2px;
+  margin-bottom: 12px;
+}
+.wsb-subs {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  border-top: 1px solid rgba(255,255,255,0.25);
+  padding-top: 10px;
+}
+.wsb-sub {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.wsb-sub-num {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+.wsb-sub-lbl {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  opacity: 0.75;
+}
+.wsb-divider {
+  width: 1px;
+  height: 36px;
+  background: rgba(255,255,255,0.25);
+  margin: 0 8px;
+}
 .welcome-copy {
   margin: 0 0 16px;
   color: var(--muted);

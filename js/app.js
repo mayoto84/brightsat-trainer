@@ -589,6 +589,21 @@ function renderWelcomeStats() {
   var answered = ls.totalAnswered || 0;
   var correct  = ls.totalCorrect  || 0;
   var accuracy = answered ? Math.round(100 * correct / answered) + '%' : '0%';
+
+  // Estimated scores
+  function secScore(sec) {
+    var sd = (ls.bySection || {})[sec];
+    if (!sd || !sd.answered) return null;
+    return scaled(sd.correct / sd.answered);
+  }
+  var rwScore   = secScore('rw');
+  var mathScore = secScore('math');
+  var totalScore = (rwScore && mathScore) ? rwScore + mathScore
+                 : (rwScore || mathScore) ? (rwScore || 200) + (mathScore || 200)
+                 : null;
+  $('wsb-total').textContent = totalScore ? totalScore : '—';
+  $('wsb-math').textContent  = mathScore  ? mathScore  : '—';
+  $('wsb-rw').textContent    = rwScore    ? rwScore    : '—';
   var xpData = Store.getXP();
   var activity = Store.getActivity();
   var completed = activity.completedTests || {};
