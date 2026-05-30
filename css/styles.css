@@ -264,6 +264,15 @@ header.top { flex-shrink: 0; padding-top: 12px; }
   flex: 1;
   min-height: 0;
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* qcontent fills the card so nav can be pushed to bottom */
+#qcontent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Ready card: natural height, centered content, doesn't fill the screen */
@@ -531,9 +540,9 @@ button.btn:disabled { opacity: 0.45; cursor: default; }
   display: flex;
   justify-content: space-between;
   gap: 8px;
-  margin-top: 14px;
+  margin-top: auto;   /* push to bottom of flex column when content is short */
   position: sticky;
-  bottom: 0;
+  bottom: 0;          /* stay visible when content is long and card scrolls */
   background: var(--card);
   padding: 10px 16px 4px;
   margin-left: -16px;
