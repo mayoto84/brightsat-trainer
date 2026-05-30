@@ -66,7 +66,8 @@ body {
   letter-spacing: 0.4px;
   margin-bottom: 7px;
 }
-.intro-input {
+.intro-input,
+.intro-select {
   width: 100%;
   padding: 13px 12px;
   border: 2px solid var(--line);
@@ -76,7 +77,11 @@ body {
   font-size: 16px;
   margin-bottom: 14px;
 }
-.intro-input:focus {
+.intro-select {
+  background: var(--card);
+}
+.intro-input:focus,
+.intro-select:focus {
   outline: none;
   border-color: var(--accent);
 }

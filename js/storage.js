@@ -168,7 +168,7 @@ var Store = (function () {
       _saveRegistry(reg);
       return user;
     },
-    createOrSelectUser: function (handle, mode) {
+    createOrSelectUser: function (handle, mode, domain) {
       var cleanHandle = String(handle || '').trim().replace(/\s+/g, ' ');
       var baseSlug = _slug(cleanHandle);
       if (!cleanHandle || !baseSlug) return null;
@@ -181,6 +181,7 @@ var Store = (function () {
 
       if (existing) {
         existing.mode = mode || existing.mode || 'all';
+        existing.domain = domain || existing.domain || 'all';
         existing.lastSeen = now;
         reg.activeSlug = existing.slug;
         _saveRegistry(reg);
@@ -198,6 +199,7 @@ var Store = (function () {
         handle: cleanHandle,
         slug: slug,
         mode: mode || 'all',
+        domain: domain || 'all',
         createdAt: now,
         lastSeen: now
       };
@@ -206,11 +208,12 @@ var Store = (function () {
       _saveRegistry(reg);
       return user;
     },
-    saveUserMode: function (mode) {
+    saveUserMode: function (mode, domain) {
       var reg = _registry();
       var user = reg.users.find(function(u) { return u.slug === reg.activeSlug; });
       if (!user) return null;
       user.mode = mode || 'all';
+      if (domain !== undefined) user.domain = domain || 'all';
       user.lastSeen = new Date().toISOString();
       _saveRegistry(reg);
       return user;

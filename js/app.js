@@ -15,6 +15,7 @@ var QUESTIONS = [].concat(
 var state = Store.getState();
 function saveQ(id, patch) { Store.saveQ(state, id, patch); }
 var introMode = 'math';
+var introDomain = 'all';
 var pendingDeleteUser = null;
 
 /* ═══════════════════════════════════════════
@@ -346,6 +347,30 @@ function setIntroMode(mode) {
   Array.from(document.querySelectorAll('.mode-option')).forEach(function(btn) {
     btn.classList.toggle('active', btn.getAttribute('data-mode') === introMode);
   });
+  refreshIntroDomainOptions();
+}
+
+function refreshIntroDomainOptions(preferred) {
+  var sel = $('intro-domain');
+  var current = preferred !== undefined ? preferred : sel.value;
+  var domains = domainsFor(introMode);
+  sel.innerHTML = '<option value="all">Random</option>';
+  domains.forEach(function(domain) {
+    var o = document.createElement('option');
+    o.value = domain;
+    o.textContent = domain;
+    sel.appendChild(o);
+  });
+  if (Array.from(sel.options).some(function(o) { return o.value === current; })) {
+    sel.value = current;
+  } else {
+    sel.value = 'all';
+  }
+  introDomain = sel.value;
+}
+
+function userFocusLabel(user) {
+  return modeLabel(user.mode) + ' - ' + (user.domain && user.domain !== 'all' ? user.domain : 'Random');
 }
 
 function renderUserList() {
@@ -361,7 +386,7 @@ function renderUserList() {
     .forEach(function(user) {
       var row = document.createElement('div');
       row.className = 'user-row';
-      row.innerHTML = '<span><b>' + escHtml(user.handle) + '</b><span>' + modeLabel(user.mode) + '</span></span>';
+      row.innerHTML = '<span><b>' + escHtml(user.handle) + '</b><span>' + escHtml(userFocusLabel(user)) + '</span></span>';
 
       var actions = document.createElement('div');
       actions.className = 'user-actions';
@@ -414,7 +439,12 @@ function showIntro() {
   $('intro-error').classList.add('hidden');
   renderUserList();
   var users = Store.getUsers();
-  if (users.length > 0) setIntroMode(users[0].mode || 'all');
+  if (users.length > 0) {
+    setIntroMode(users[0].mode || 'all');
+    refreshIntroDomainOptions(users[0].domain || 'all');
+  } else {
+    refreshIntroDomainOptions('all');
+  }
 }
 
 function updateUserUI() {
@@ -437,6 +467,8 @@ function startAppForActiveUser() {
   $('app-shell').classList.remove('hidden');
   updateUserUI();
   refreshDomainOptions();
+  var wantedDomain = user.domain || 'all';
+  $('f-domain').value = Array.from($('f-domain').options).some(function(o) { return o.value === wantedDomain; }) ? wantedDomain : 'all';
   buildList();
   timerReset();
   render();
@@ -445,7 +477,8 @@ function startAppForActiveUser() {
 
 function createUserFromIntro() {
   var handle = $('intro-handle').value;
-  var user = Store.createOrSelectUser(handle, introMode);
+  introDomain = $('intro-domain').value || 'all';
+  var user = Store.createOrSelectUser(handle, introMode, introDomain);
   if (!user) {
     $('intro-error').textContent = 'Enter a handle using at least one letter or number.';
     $('intro-error').classList.remove('hidden');
@@ -753,8 +786,8 @@ function refreshDomainOptions() {
   else sel.value = 'all';
 }
 
-$('f-section').onchange = function() { Store.saveUserMode($('f-section').value); refreshDomainOptions(); reviewMode = false; pos = 0; buildList(); timerReset(); render(); };
-$('f-domain').onchange  = function() { pos = 0; buildList(); timerReset(); render(); };
+$('f-section').onchange = function() { Store.saveUserMode($('f-section').value, 'all'); refreshDomainOptions(); reviewMode = false; pos = 0; buildList(); timerReset(); render(); };
+$('f-domain').onchange  = function() { Store.saveUserMode($('f-section').value, $('f-domain').value); pos = 0; buildList(); timerReset(); render(); };
 $('f-order').onchange   = function() { pos = 0; buildList(); timerReset(); render(); };
 $('checkbtn').onclick   = checkMC;
 $('gridsubmit').onclick = checkGrid;
@@ -816,6 +849,7 @@ $('timer-toggle').onclick = timerToggle;
 $('timer-reset').onclick  = timerReset;
 $('intro-start').onclick  = createUserFromIntro;
 $('intro-handle').addEventListener('keydown', function(e) { if (e.key === 'Enter') createUserFromIntro(); });
+$('intro-domain').onchange = function() { introDomain = $('intro-domain').value || 'all'; };
 $('change-user').onclick = function() {
   Store.clearActiveUser();
   timerReset();
@@ -827,7 +861,7 @@ $('brand-home').onclick = function() {
   showIntro();
 };
 Array.from(document.querySelectorAll('.mode-option')).forEach(function(btn) {
-  btn.onclick = function() { setIntroMode(btn.getAttribute('data-mode')); };
+  btn.onclick = function() { setIntroMode(btn.getAttribute('data-mode')); refreshIntroDomainOptions('all'); };
 });
 
 /* ═══════════════════════════════════════════

@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BrightSAT Trainer</title>
-<link rel="stylesheet" href="css/styles.css?v=20260530">
+<link rel="stylesheet" href="css/styles.css?v=20260530b">
 </head>
 <body>
 <section class="intro-screen" id="intro-screen">
@@ -24,6 +24,9 @@
         <button class="mode-option" type="button" data-mode="rw">Reading &amp; Writing</button>
         <button class="mode-option" type="button" data-mode="all">Both</button>
       </div>
+
+      <label for="intro-domain">Focus</label>
+      <select id="intro-domain" class="intro-select"></select>
 
       <button class="btn intro-start" id="intro-start">Start training</button>
       <p class="intro-error hidden" id="intro-error"></p>
@@ -258,7 +261,7 @@
 <script src="data/reading.js?v=20260530"></script>
 <script src="data/writing.js?v=20260530"></script>
 <!-- Engine (depends on data + storage) -->
-<script src="js/storage.js?v=20260530"></script>
-<script src="js/app.js?v=20260530"></script>
+<script src="js/storage.js?v=20260530b"></script>
+<script src="js/app.js?v=20260530b"></script>
 </body>
 </html>
