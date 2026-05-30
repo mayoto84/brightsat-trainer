@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BrightSAT Trainer</title>
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div>
+      <h1>BrightSAT Trainer</h1>
+      <span class="sub" id="bankcount"></span>
+    </div>
+    <div class="xp-bar">
+      <div class="streak-badge">
+        <span class="flame" id="streak-flame">🔥</span>
+        <span id="header-streak">0 days</span>
+      </div>
+      <div class="xp-badge" id="header-xp">0 XP</div>
+    </div>
+  </header>
+
+  <p class="sub">Open practice in the Digital SAT format. No login required. Pick answers, check them, and read how each one is solved. Progress and estimated scores are saved automatically.</p>
+
+  <div class="tabs">
+    <button class="tab active" id="tab-practice">Practice</button>
+    <button class="tab" id="tab-progress">My Progress</button>
+  </div>
+
+  <!-- ── PRACTICE VIEW ─────────────────────── -->
+  <section id="view-practice">
+    <div class="card">
+      <div class="filters">
+        <div class="field">
+          <label for="f-section">Section</label>
+          <select id="f-section">
+            <option value="all">All sections</option>
+            <option value="rw">Reading &amp; Writing</option>
+            <option value="math">Math</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="f-domain">Topic</label>
+          <select id="f-domain"><option value="all">All topics</option></select>
+        </div>
+        <div class="field">
+          <label for="f-order">Order</label>
+          <select id="f-order">
+            <option value="seq">In order</option>
+            <option value="unanswered">Unanswered first</option>
+            <option value="random">Shuffle</option>
+          </select>
+        </div>
+      </div>
+      <div class="progressbar"><i id="pbar"></i></div>
+      <div class="counter"><span id="qpos">—</span><span id="qright">—</span></div>
+    </div>
+
+    <!-- ── TIMER CARD ───────────────────────── -->
+    <div class="card" id="timer-card">
+      <div class="timer-top">
+        <div class="timer-left">
+          <span class="timer-clock" id="timer-clock">00:00</span>
+          <span class="timer-section-badge" id="timer-section-badge"></span>
+        </div>
+        <div class="timer-controls">
+          <button class="btn subtle" id="timer-toggle">▶ Start</button>
+          <button class="btn subtle" id="timer-reset">↺ Reset</button>
+        </div>
+      </div>
+
+      <div class="timer-stats">
+        <div class="tstat">
+          <div class="tstat-val" id="tstat-required">—</div>
+          <div class="tstat-lbl">Required Q/min</div>
+        </div>
+        <div class="tstat" id="tstat-pace-wrap">
+          <div class="tstat-val" id="tstat-pace">—</div>
+          <div class="tstat-lbl">Your Q/min</div>
+        </div>
+        <div class="tstat">
+          <div class="tstat-val" id="tstat-target">—</div>
+          <div class="tstat-lbl">Target by now</div>
+        </div>
+        <div class="tstat">
+          <div class="tstat-val" id="tstat-answered">0</div>
+          <div class="tstat-lbl">Session answered</div>
+        </div>
+      </div>
+
+      <div class="pace-track-wrap">
+        <div class="pace-track" id="pace-track">
+          <div class="pace-fill" id="pace-fill"></div>
+          <div class="pace-needle" id="pace-needle" title="Target"></div>
+        </div>
+        <div class="pace-legend">
+          <span class="pace-legend-item pace-legend-fill">&#9646; Answered</span>
+          <span class="pace-legend-item pace-legend-needle">&#x2502; Target</span>
+          <span class="pace-status-text" id="pace-status-text"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="qcard">
+      <!-- empty-state (shown when no questions match the current filter) -->
+      <div id="qempty" class="hidden">
+        <p id="qempty-msg" style="color:var(--muted);margin:0 0 12px"></p>
+        <button class="btn hidden" id="exitreviewbtn" onclick="exitReview()">Back to all questions</button>
+      </div>
+      <!-- real question content -->
+      <div id="qcontent">
+      <div class="qmeta" id="qmeta"></div>
+      <div class="passage hidden" id="qpassage"></div>
+      <div class="stem" id="qstem"></div>
+      <div class="choices" id="qchoices"></div>
+      <div class="gridin hidden" id="qgrid">
+        <input type="text" id="gridinput" placeholder="Type your answer (e.g. 4 or 1/2)" autocomplete="off">
+        <button class="btn" id="gridsubmit">Check</button>
+      </div>
+
+      <div class="row" id="actionrow">
+        <button class="btn ghost" id="checkbtn">Check answer</button>
+        <button class="btn subtle" id="explainbtn">Show explanation</button>
+        <button class="btn subtle" id="flagbtn">Flag</button>
+      </div>
+
+      <div class="feedback" id="feedback"></div>
+      <div class="explain hidden" id="explain"></div>
+
+      <div class="nav">
+        <button class="btn subtle" id="prevbtn">&larr; Previous</button>
+        <button class="btn" id="nextbtn">Next &rarr;</button>
+      </div>
+      </div><!-- #qcontent -->
+    </div><!-- #qcard -->
+  </section>
+
+  <!-- ── PROGRESS VIEW ─────────────────────── -->
+  <section id="view-progress" class="hidden">
+    <div class="card">
+      <h3 class="sec" style="margin-top:0">Estimated SAT Score</h3>
+      <div class="scoregrid">
+        <div class="scorebox total">
+          <div class="big" id="sc-total">—</div>
+          <div class="lbl">Total</div>
+          <div class="rng">400–1600</div>
+        </div>
+        <div class="scorebox">
+          <div class="big" id="sc-rw">—</div>
+          <div class="lbl">Reading &amp; Writing</div>
+          <div class="rng">200–800</div>
+        </div>
+        <div class="scorebox">
+          <div class="big" id="sc-math">—</div>
+          <div class="lbl">Math</div>
+          <div class="rng">200–800</div>
+        </div>
+      </div>
+      <p class="note" id="score-note"></p>
+    </div>
+
+    <div class="card">
+      <h3 class="sec" style="margin-top:0">Overall</h3>
+      <div class="statline"><span>Questions answered</span><b id="st-answered">0</b></div>
+      <div class="statline"><span>Correct</span><b id="st-correct">0</b></div>
+      <div class="statline"><span>Accuracy</span><b id="st-acc">0%</b></div>
+      <div class="statline"><span>Flagged for review</span><b id="st-flag">0</b></div>
+    </div>
+
+    <div class="card">
+      <h3 class="sec" style="margin-top:0">By topic  <span style="font-size:11px;color:var(--muted);text-transform:none;letter-spacing:0">(★ = crown level)</span></h3>
+      <table class="bd">
+        <thead>
+          <tr>
+            <th>Topic</th>
+            <th class="num">Done</th>
+            <th class="num">Correct</th>
+            <th class="num">Accuracy</th>
+          </tr>
+        </thead>
+        <tbody id="bd-body"></tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <button class="btn subtle" id="reviewflagged">Practice flagged questions</button>
+      <button class="btn subtle" id="resetbtn" style="border-color:var(--bad);color:var(--bad);margin-top:8px">Reset all progress</button>
+      <button class="btn subtle" id="resetxpbtn" style="margin-top:8px">Reset XP &amp; streak</button>
+      <p class="save-warn hidden" id="savewarn">
+        Heads up: your browser is blocking saved storage — progress will reset when you close the page.
+      </p>
+    </div>
+  </section>
+
+</div><!-- .wrap -->
+
+<!-- Slide-up feedback banner -->
+<div class="slide-banner" id="slide-banner"></div>
+
+<!-- Celebration modal -->
+<div class="celebration-modal hidden" id="celebration-modal">
+  <div class="celebration-box">
+    <div class="celebration-emoji">🎉</div>
+    <h2 id="celebration-text"></h2>
+    <p id="celebration-bonus"></p>
+    <button class="btn" id="cel-close">Keep going!</button>
+  </div>
+</div>
+
+<!-- Data files (order matters) -->
+<script src="data/math.js"></script>
+<script src="data/reading.js"></script>
+<script src="data/writing.js"></script>
+<!-- Engine (depends on data + storage) -->
+<script src="js/storage.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
