@@ -1,6 +1,47 @@
 // js/app.js  —  BrightSAT Trainer main engine
 
 /* ═══════════════════════════════════════════
+   SOUND EFFECTS  (Web Audio API, no files)
+═══════════════════════════════════════════ */
+var _audioCtx = null;
+function _getAudio() {
+  if (!_audioCtx) {
+    try { _audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
+  }
+  return _audioCtx;
+}
+function _tone(freq, type, startSec, dur, gain) {
+  var ctx = _getAudio(); if (!ctx) return;
+  var osc = ctx.createOscillator();
+  var g   = ctx.createGain();
+  osc.connect(g); g.connect(ctx.destination);
+  osc.type = type; osc.frequency.value = freq;
+  g.gain.setValueAtTime(gain, ctx.currentTime + startSec);
+  g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + startSec + dur);
+  osc.start(ctx.currentTime + startSec);
+  osc.stop(ctx.currentTime + startSec + dur);
+}
+function playCorrectSound() {
+  // Two ascending sine tones — bright "ding-ding"
+  _tone(523, 'sine', 0,    0.18, 0.28);
+  _tone(784, 'sine', 0.12, 0.25, 0.22);
+}
+function playWrongSound() {
+  // Descending buzz — short, not annoying
+  var ctx = _getAudio(); if (!ctx) return;
+  var osc = ctx.createOscillator();
+  var g   = ctx.createGain();
+  osc.connect(g); g.connect(ctx.destination);
+  osc.type = 'sawtooth';
+  osc.frequency.setValueAtTime(220, ctx.currentTime);
+  osc.frequency.exponentialRampToValueAtTime(80, ctx.currentTime + 0.28);
+  g.gain.setValueAtTime(0.18, ctx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.28);
+  osc.start(ctx.currentTime);
+  osc.stop(ctx.currentTime + 0.28);
+}
+
+/* ═══════════════════════════════════════════
    QUESTIONS  (assembled from data files)
 ═══════════════════════════════════════════ */
 var QUESTIONS = [].concat(
@@ -586,6 +627,7 @@ function startFromIntro() {
   if (active && $('new-user-card').classList.contains('hidden')) {
     Store.saveUserMode(introMode, introDomain);
     startAppForActiveUser();
+    timerToggle(); // auto-start the countdown
     return;
   }
   createUserFromIntro();
@@ -679,6 +721,7 @@ function render() {
           if (answered) return;
           var correct = idx === q.answer;
           saveQ(q.id, { chosen: idx, answered: true, correct: correct });
+          if (correct) playCorrectSound(); else playWrongSound();
           awardXP(correct);
           timerOnAnswer();
           explainOpen = false;
@@ -754,6 +797,7 @@ function checkGrid() {
   if (String(val).trim() === '') return;
   var ok = gridCorrect(val, q.answer);
   saveQ(q.id, { chosen: val, answered: true, correct: ok });
+  if (ok) playCorrectSound(); else playWrongSound();
   awardXP(ok);
   timerOnAnswer();
   explainOpen = false;
@@ -947,6 +991,10 @@ $('tab-progress').onclick = function() {
   $('view-progress').classList.remove('hidden');
   $('view-practice').classList.add('hidden');
   renderProgress();
+};
+$('welcome-progress-btn').onclick = function() {
+  startAppForActiveUser();
+  $('tab-progress').click();
 };
 
 $('cel-close').onclick    = function() { $('celebration-modal').classList.add('hidden'); };
