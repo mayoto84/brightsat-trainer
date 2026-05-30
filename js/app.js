@@ -236,6 +236,7 @@ function timerReset() {
   timer.sessionAnswered = 0;
   completedTestRecorded = false;
   $('timer-toggle').textContent = 'Start';
+  state = Store.clearAnswers(); // wipe per-question answers; keep flags
   expandFilters();
   hideQuestionCard();
   updateTimerUI();
@@ -582,8 +583,9 @@ function hideQuestionCard() {
 }
 
 function renderWelcomeStats() {
-  var answered = QUESTIONS.filter(function(q) { return state[q.id] && state[q.id].answered; }).length;
-  var correct = QUESTIONS.filter(function(q) { return state[q.id] && state[q.id].answered && state[q.id].correct; }).length;
+  var ls = Store.getLifetimeStats();
+  var answered = ls.totalAnswered || 0;
+  var correct  = ls.totalCorrect  || 0;
   var accuracy = answered ? Math.round(100 * correct / answered) + '%' : '0%';
   var xpData = Store.getXP();
   var activity = Store.getActivity();
@@ -735,6 +737,7 @@ function render() {
           if (answered) return;
           var correct = idx === q.answer;
           saveQ(q.id, { chosen: idx, answered: true, correct: correct });
+          Store.recordAnswer(q, correct);
           if (correct) playCorrectSound(); else playWrongSound();
           awardXP(correct);
           timerOnAnswer();
@@ -811,6 +814,7 @@ function checkGrid() {
   if (String(val).trim() === '') return;
   var ok = gridCorrect(val, q.answer);
   saveQ(q.id, { chosen: val, answered: true, correct: ok });
+  Store.recordAnswer(q, ok);
   if (ok) playCorrectSound(); else playWrongSound();
   awardXP(ok);
   timerOnAnswer();
@@ -865,23 +869,23 @@ function renderCrowns(level) {
 }
 
 function renderProgress() {
-  var ans = QUESTIONS.filter(function(q) { return state[q.id] && state[q.id].answered; });
-  var cor = ans.filter(function(q) { return state[q.id].correct; });
-  $('st-answered').textContent = ans.length;
-  $('st-correct').textContent = cor.length;
-  $('st-acc').textContent = ans.length ? Math.round(100 * cor.length / ans.length) + '%' : '0%';
+  var ls = Store.getLifetimeStats();
+  var totalAns = ls.totalAnswered || 0;
+  var totalCor = ls.totalCorrect  || 0;
+  $('st-answered').textContent = totalAns;
+  $('st-correct').textContent  = totalCor;
+  $('st-acc').textContent      = totalAns ? Math.round(100 * totalCor / totalAns) + '%' : '0%';
   $('st-flag').textContent = QUESTIONS.filter(function(q) { return state[q.id] && state[q.id].flagged; }).length;
 
   function sectionScore(sec) {
-    var a = QUESTIONS.filter(function(q) { return q.section === sec && state[q.id] && state[q.id].answered; });
-    if (a.length === 0) return null;
-    var c = a.filter(function(q) { return state[q.id].correct; }).length;
-    return { score: scaled(c / a.length), n: a.length };
+    var sd = (ls.bySection || {})[sec];
+    if (!sd || !sd.answered) return null;
+    return { score: scaled(sd.correct / sd.answered), n: sd.answered };
   }
 
   var rw = sectionScore('rw'), m = sectionScore('math');
-  $('sc-rw').textContent = rw ? rw.score : '—';
-  $('sc-math').textContent = m ? m.score : '—';
+  $('sc-rw').textContent   = rw ? rw.score : '—';
+  $('sc-math').textContent = m  ? m.score  : '—';
   if (rw && m) {
     $('sc-total').textContent = rw.score + m.score;
   } else if (rw || m) {
@@ -891,12 +895,12 @@ function renderProgress() {
   }
 
   var parts = [];
-  if (rw) parts.push('R&W based on ' + rw.n + ' answered');
-  if (m) parts.push('Math based on ' + m.n + ' answered');
+  if (rw) parts.push('R&W based on ' + rw.n + ' attempts');
+  if (m)  parts.push('Math based on ' + m.n  + ' attempts');
   $('score-note').textContent = (parts.length ? parts.join('; ') + '. ' : 'Answer some questions to see an estimate. ') +
     'Scores are estimates from your accuracy so far (200–800 per section). Not official College Board scores.';
 
-  // Domain breakdown table
+  // Domain breakdown table — reads from lifetime stats
   var domains = [];
   QUESTIONS.forEach(function(q) {
     if (!domains.find(function(d) { return d.name === q.domain; }))
@@ -906,11 +910,13 @@ function renderProgress() {
   var body = $('bd-body');
   body.innerHTML = '';
   domains.forEach(function(d) {
-    var qs = QUESTIONS.filter(function(q) { return q.domain === d.name; });
-    var a = qs.filter(function(q) { return state[q.id] && state[q.id].answered; });
-    var c = a.filter(function(q) { return state[q.id].correct; }).length;
-    var acc = a.length ? Math.round(100 * c / a.length) : null;
-    var cl = crownLevel(a.length, acc, qs.length);
+    var qs  = QUESTIONS.filter(function(q) { return q.domain === d.name; });
+    var dd  = ((ls.byDomain || {})[d.name]) || { answered: 0, correct: 0 };
+    var aLen = dd.answered;
+    var c    = dd.correct;
+    var acc  = aLen ? Math.round(100 * c / aLen) : null;
+    // Cap pctAnswered at 1 since repeat attempts can exceed pool size
+    var cl = crownLevel(Math.min(aLen, qs.length), acc, qs.length);
 
     var color = '#9aa3af', bg = '#eef1f6';
     if (acc !== null) {
@@ -923,7 +929,7 @@ function renderProgress() {
     tr.innerHTML = '<td>' + escHtml(d.name) + renderCrowns(cl) +
       '<br><span style="font-size:11px;color:var(--muted)">' +
       (d.section === 'rw' ? 'Reading & Writing' : 'Math') + '</span></td>' +
-      '<td class="num">' + a.length + '/' + qs.length + '</td>' +
+      '<td class="num">' + aLen + '</td>' +
       '<td class="num">' + c + '</td>' +
       '<td class="num">' + (acc !== null
         ? '<span class="acc-pill" style="color:' + color + ';background:' + bg + '">' + acc + '%</span>'

@@ -10,6 +10,7 @@ var Store = (function () {
   var LEGACY_STATE_KEY = 'brightsat_v1';
   var LEGACY_XP_KEY = 'brightsat_xp';
   var ACTIVITY_KEY = 'brightsat_activity';
+  var STATS_KEY = 'brightsat_stats';
   try {
     var _k = '__bst_test__';
     localStorage.setItem(_k, '1');
@@ -127,6 +128,11 @@ var Store = (function () {
     return user ? ACTIVITY_KEY + '_' + user.slug : ACTIVITY_KEY;
   }
 
+  function _statsKey() {
+    var user = _activeUser();
+    return user ? STATS_KEY + '_' + user.slug : STATS_KEY;
+  }
+
   return {
     isAvailable: function () { return OK || SERVER_OK; },
     usesServer: function () { return SERVER_OK; },
@@ -239,6 +245,7 @@ var Store = (function () {
       _remove(LEGACY_STATE_KEY + '_' + slug);
       _remove(LEGACY_XP_KEY + '_' + slug);
       _remove(ACTIVITY_KEY + '_' + slug);
+      _remove(STATS_KEY + '_' + slug);
       return true;
     },
 
@@ -293,6 +300,37 @@ var Store = (function () {
       activity.completedTests[key] = (activity.completedTests[key] || 0) + 1;
       Store.setActivity(activity);
       return activity;
+    },
+
+    // ── Lifetime stats (persist across sessions) ─────────────
+    // Shape: { totalAnswered, totalCorrect, bySection: {rw,math}, byDomain: {name} }
+    getLifetimeStats: function () {
+      return _get(_statsKey(), { totalAnswered: 0, totalCorrect: 0, bySection: {}, byDomain: {} });
+    },
+    setLifetimeStats: function (obj) { _set(_statsKey(), obj); },
+    recordAnswer: function (q, correct) {
+      var ls = Store.getLifetimeStats();
+      ls.totalAnswered = (ls.totalAnswered || 0) + 1;
+      ls.totalCorrect  = (ls.totalCorrect  || 0) + (correct ? 1 : 0);
+      if (!ls.bySection) ls.bySection = {};
+      if (!ls.bySection[q.section]) ls.bySection[q.section] = { answered: 0, correct: 0 };
+      ls.bySection[q.section].answered++;
+      if (correct) ls.bySection[q.section].correct++;
+      if (!ls.byDomain) ls.byDomain = {};
+      if (!ls.byDomain[q.domain]) ls.byDomain[q.domain] = { answered: 0, correct: 0 };
+      ls.byDomain[q.domain].answered++;
+      if (correct) ls.byDomain[q.domain].correct++;
+      Store.setLifetimeStats(ls);
+    },
+    // Wipe per-question answers at session end; keep flagged entries
+    clearAnswers: function () {
+      var st = Store.getState();
+      var cleaned = {};
+      Object.keys(st).forEach(function(id) {
+        if (st[id] && st[id].flagged) cleaned[id] = { flagged: true };
+      });
+      _set(_stateKey(), cleaned);
+      return cleaned;
     }
   };
 })();
