@@ -224,6 +224,7 @@ function timerToggle() {
     timer.running = true;
     timer._tick = setInterval(updateTimerUI, 500);
     $('timer-toggle').textContent = 'Pause';
+    $('timer-toggle').classList.remove('btn-start');
     updateTimerUI();
   }
 }
@@ -236,6 +237,7 @@ function timerReset() {
   timer.sessionAnswered = 0;
   completedTestRecorded = false;
   $('timer-toggle').textContent = 'Start';
+  $('timer-toggle').classList.add('btn-start');
   state = Store.clearAnswers(); // wipe per-question answers; keep flags
   expandFilters();
   hideQuestionCard();
