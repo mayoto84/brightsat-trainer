@@ -691,6 +691,17 @@ function render() {
     $('exitreviewbtn').textContent = 'New Test →';
     $('exitreviewbtn').onclick = function(){ pos=0; buildList(); timerReset(); render(); };
     $('exitreviewbtn').classList.remove('hidden');
+    var vpBtn = $('view-progress-btn');
+    if (!vpBtn) {
+      vpBtn = document.createElement('button');
+      vpBtn.id = 'view-progress-btn';
+      vpBtn.className = 'btn subtle';
+      vpBtn.style.marginTop = '8px';
+      vpBtn.textContent = 'View my progress';
+      vpBtn.onclick = function() { $('tab-progress').onclick(); };
+      $('exitreviewbtn').parentNode.insertBefore(vpBtn, $('exitreviewbtn').nextSibling);
+    }
+    vpBtn.classList.remove('hidden');
     $('qempty').classList.remove('hidden');
     $('qcontent').classList.add('hidden');
     $('pbar').style.width='100%';
@@ -705,6 +716,7 @@ function render() {
     $('qempty-msg').textContent = 'No questions match this filter' +
       (reviewMode ? ' — you have no flagged questions yet.' : '.');
     $('exitreviewbtn').classList.toggle('hidden', !reviewMode);
+    if ($('view-progress-btn')) $('view-progress-btn').classList.add('hidden');
     $('pbar').style.width = '0%';
     $('qpos').textContent = '—';
     $('qright').textContent = '';
@@ -809,8 +821,8 @@ function render() {
   var isLast = pos === list.length - 1;
   var hasUnanswered = list.some(function(q) { return !state[q.id] || !state[q.id].answered; });
   $('prevbtn').disabled = pos === 0;
-  // Disable Next only when at the last position AND the current question isn't answered yet
-  $('nextbtn').disabled = isLast && !answered;
+  // Block Next until the current question is answered
+  $('nextbtn').disabled = !answered || isLast;
   $('nextbtn').textContent = (isLast && answered && hasUnanswered) ? 'Review remaining →' : 'Next →';
   $('qpos').textContent = 'Question ' + (pos + 1) + ' of ' + list.length;
   var doneInList    = list.filter(function(x){ return state[x.id] && state[x.id].answered; }).length;
