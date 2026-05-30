@@ -921,56 +921,109 @@ h3.sec {
 .pace-status-text.behind  { color: var(--bad); }
 
 /* ═══════════════════════════════════════════
-   RESPONSIVE
+   MOBILE COMPACT STATS BAR (hidden on desktop)
 ═══════════════════════════════════════════ */
-@media (max-width: 480px) {
-  h1, .brand-button { font-size: 19px; }
-  .scorebox .big { font-size: 26px; }
-  .choice { font-size: 14px; }
-  .stem { font-size: 15px; }
-  .celebration-box h2 { font-size: 20px; }
-  .xp-bar { gap: 8px; }
-  .intro-screen { align-items: flex-start; }
-  .intro-brand h1 { font-size: 26px; }
-  .mode-grid { grid-template-columns: 1fr; }
-  .welcome-stats { grid-template-columns: 1fr 1fr; }
-  .user-row {
-    align-items: stretch;
-    flex-direction: column;
-  }
-  .user-actions {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    width: 100%;
-  }
+.timer-mobile-bar {
+  display: none; /* shown via media query */
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  margin-top: 6px;
+}
+.tmb-correct { color: var(--good); }
+.tmb-wrong   { color: var(--bad); }
+.tmb-sep     { color: var(--line); }
+.tmb-progress { color: var(--muted); margin-left: auto; }
+
+/* ═══════════════════════════════════════════
+   RESPONSIVE — MOBILE (≤ 600px)
+   Goal: timer = one compact row, question fills the rest
+═══════════════════════════════════════════ */
+@media (max-width: 600px) {
+  /* Non-essential header text gone on mobile */
+  #app-tagline { display: none; }
+
+  /* Tighter global spacing */
   .wrap { padding-left: 10px; padding-right: 10px; }
-  .card { padding: 14px; }
-  .nav { padding-left: 14px; padding-right: 14px; margin-left: -14px; margin-right: -14px; }
-  .timer-top { align-items: stretch; }
-  .timer-left {
-    flex-basis: 100%;
+  .tabs { margin-bottom: 6px; }
+  .tab { padding: 8px 10px; font-size: 13px; }
+  #view-practice { gap: 8px; padding-bottom: 8px; }
+
+  /* Smaller text in question card */
+  .choice { font-size: 14px; }
+  .stem   { font-size: 15px; }
+  .card   { padding: 12px; }
+
+  /* ── Timer: everything in one compact row ── */
+  #timer-card { padding: 10px 12px; }
+  .timer-top  {
     align-items: center;
+    flex-wrap: nowrap;
+    margin-bottom: 0;
+    gap: 6px;
+  }
+  .timer-left {
+    flex: 1;
+    align-items: center;
+    flex-wrap: nowrap;
+    gap: 6px;
+    min-width: 0;
   }
   .timer-clock {
-    font-size: 32px;
-    letter-spacing: 0;
+    font-size: 24px;
+    letter-spacing: -0.5px;
+    line-height: 1;
+    flex-shrink: 0;
   }
+  .timer-section-badge {
+    font-size: 9px;
+    padding: 2px 5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  /* Buttons inline, small */
   .timer-controls {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    width: 100%;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    width: auto;
+    gap: 4px;
   }
-  .timer-controls .btn { width: 100%; padding-left: 10px; padding-right: 10px; }
-  .timer-stats {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+  .timer-controls .btn {
+    padding: 5px 8px;
+    font-size: 11px;
+    width: auto;
+    border-radius: 8px;
   }
-  .pace-legend {
-    flex-wrap: wrap;
-    gap: 6px 10px;
+
+  /* Hide the full stat boxes and pace bar — replaced by compact bar */
+  .timer-stats    { display: none; }
+  .pace-track-wrap { display: none; }
+
+  /* Show compact mobile stats bar */
+  .timer-mobile-bar { display: flex; }
+
+  /* Nav edge padding matches 12px card */
+  .nav {
+    padding-left: 12px;
+    padding-right: 12px;
+    margin-left: -12px;
+    margin-right: -12px;
   }
-  .pace-status-text {
-    width: 100%;
-    margin-left: 0;
-  }
+
+  /* Intro / welcome screen adjustments */
+  .intro-screen   { align-items: flex-start; }
+  .intro-brand h1 { font-size: 26px; }
+  .mode-grid      { grid-template-columns: 1fr; }
+  .welcome-stats  { grid-template-columns: 1fr 1fr; }
+  .user-row       { align-items: stretch; flex-direction: column; }
+  .user-actions   { display: grid; grid-template-columns: 1fr 1fr; width: 100%; }
+
+  /* XP / scores */
+  h1, .brand-button { font-size: 19px; }
+  .xp-bar           { gap: 8px; }
+  .scorebox .big    { font-size: 26px; }
+  .celebration-box h2 { font-size: 20px; }
 }

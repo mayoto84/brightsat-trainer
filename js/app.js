@@ -244,6 +244,10 @@ function updateTimerUI() {
   $('tstat-correct').textContent = sessionCorrect;
   $('tstat-wrong').textContent   = sessionWrong;
   $('pace-progress').textContent = timer.sessionAnswered + ' / ' + questionCount;
+  // Mobile compact bar
+  $('tmb-correct').textContent  = '✓ ' + sessionCorrect;
+  $('tmb-wrong').textContent    = '✗ ' + sessionWrong;
+  $('tmb-progress').textContent = timer.sessionAnswered + ' / ' + questionCount;
 
   // Not enough time for meaningful stats yet
   if (elapsedMin < 0.05) {
@@ -501,11 +505,13 @@ function updateUserUI() {
 function collapseFilters() {
   $('filter-card').classList.add('filters-hidden');
   $('timer-change-btn').classList.remove('hidden');
+  $('timer-mobile-bar').classList.remove('hidden');
 }
 
 function expandFilters() {
   $('filter-card').classList.remove('filters-hidden');
   $('timer-change-btn').classList.add('hidden');
+  $('timer-mobile-bar').classList.add('hidden');
 }
 
 function showQuestionCard() {

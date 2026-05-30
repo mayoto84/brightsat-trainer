@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BrightSAT Trainer</title>
-<link rel="stylesheet" href="css/styles.css?v=20260530k">
+<link rel="stylesheet" href="css/styles.css?v=20260530l">
 </head>
 <body>
 <section class="intro-screen" id="intro-screen">
@@ -116,6 +116,15 @@
           <button class="btn subtle" id="timer-toggle">Start</button>
           <button class="btn subtle" id="timer-reset">Reset</button>
         </div>
+      </div>
+
+      <!-- Mobile-only compact stats (hidden on desktop) -->
+      <div class="timer-mobile-bar hidden" id="timer-mobile-bar">
+        <span class="tmb-correct" id="tmb-correct">✓ 0</span>
+        <span class="tmb-sep">·</span>
+        <span class="tmb-wrong" id="tmb-wrong">✗ 0</span>
+        <span class="tmb-sep">·</span>
+        <span class="tmb-progress" id="tmb-progress">0 / 20</span>
       </div>
 
       <div class="timer-stats">
@@ -281,7 +290,7 @@
 <script src="data/reading.js?v=20260530"></script>
 <script src="data/writing.js?v=20260530"></script>
 <!-- Engine (depends on data + storage) -->
-<script src="js/storage.js?v=20260530k"></script>
-<script src="js/app.js?v=20260530k"></script>
+<script src="js/storage.js?v=20260530l"></script>
+<script src="js/app.js?v=20260530l"></script>
 </body>
 </html>
