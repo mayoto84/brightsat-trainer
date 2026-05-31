@@ -363,11 +363,7 @@ function awardXP(correct) {
   var bonus = (consecutiveCorrect >= 5) ? 5 : 0;
   var pts = XP_PER_CORRECT + bonus;
   var xpData = Store.addXP(pts);
-  showXPToast('+' + pts + ' XP');
   updateXPBar(xpData);
-  if (consecutiveCorrect === 5 || consecutiveCorrect === 10 || consecutiveCorrect === 20) {
-    showStreakCelebration(consecutiveCorrect);
-  }
 }
 
 function showXPToast(text) {
