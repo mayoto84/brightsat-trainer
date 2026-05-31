@@ -113,24 +113,20 @@ var list = [], pos = 0, reviewMode = false;
 function buildList() {
   var sec = $('f-section').value;
   var dom = $('f-domain').value;
-  var ord = $('f-order').value;
   var arr = reviewMode
     ? QUESTIONS.filter(function(q) { return state[q.id] && state[q.id].flagged; })
     : QUESTIONS.filter(function(q) {
         return (sec === 'all' || q.section === sec) && (dom === 'all' || q.domain === dom);
       });
-  // Always shuffle individual questions for variety
-  arr = arr.slice();
-  for (var i = arr.length - 1; i > 0; i--) {
-    var j = Math.floor(Math.random() * (i + 1));
-    var tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
-  }
-  // "Unanswered first" priority: bubble unanswered to front, preserve shuffle within groups
-  if (ord === 'unanswered') {
-    var unanswered = arr.filter(function(q) { return !state[q.id] || !state[q.id].answered; });
-    var answered   = arr.filter(function(q) { return state[q.id] && state[q.id].answered; });
-    arr = unanswered.concat(answered);
-  }
+  // Weighted shuffle: unanswered questions score 0–0.55, answered score 0.45–1.0.
+  // The ~10% overlap keeps the mix feeling random while new questions drift
+  // toward the front of each 20-question set.
+  arr = arr.slice().map(function(q) {
+    var isNew = !state[q.id] || !state[q.id].answered;
+    return { q: q, score: isNew ? Math.random() * 0.55 : 0.45 + Math.random() * 0.55 };
+  }).sort(function(a, b) {
+    return a.score - b.score;
+  }).map(function(x) { return x.q; });
   if (!reviewMode) arr = arr.slice(0, TEST_SIZE);
   list = arr;
   completedTestRecorded = false;
@@ -999,7 +995,6 @@ function refreshDomainOptions() {
 
 $('f-section').onchange = function() { Store.saveUserMode($('f-section').value, 'all'); refreshDomainOptions(); reviewMode = false; pos = 0; buildList(); timerReset(); render(); };
 $('f-domain').onchange  = function() { Store.saveUserMode($('f-section').value, $('f-domain').value); pos = 0; buildList(); timerReset(); render(); };
-$('f-order').onchange   = function() { pos = 0; buildList(); timerReset(); render(); };
 $('filter-edit-btn').onclick = expandFilters;
 $('timer-change-btn').onclick = function() { timerReset(); };
 $('checkbtn').onclick   = checkMC;
